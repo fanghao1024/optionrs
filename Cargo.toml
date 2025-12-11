@@ -1,0 +1,23 @@
+[package]
+name = "optionrs"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "A high-performance option pricing library for Rust, supporting Black-Scholes, binomial tree, Monte Carlo simulation, PDE and exotic options (European/American/Barrier)."
+authors = ["fang hao <fanghao1024@outlook.com>"]
+
+readme = "README.md"         # 关联README文件（必须存在）
+repository = "https://github.com/fanghao1024/optionrs"  # 代码仓库地址（GitHub/GitLab等）
+homepage = "https://github.com/fanghao1024/optionrs"    # 主页（通常和仓库一致）
+documentation = "https://docs.rs/optionrs"                # 文档地址（发布后自动生成）
+keywords = ["option-pricing", "finance", "quant", "black-scholes", "monte-carlo"]  # 搜索关键词（5-10个）
+categories = ["finance", "mathematics", "algorithms", "science"]  # 分类（参考crates.io的分类列表）
+exclude = [".gitignore", "tests/benchmark/*", "docs/assets/*"]   # 排除无需发布的文件
+
+[dependencies]
+assert_approx_eq = "1.1.0"
+owens-t = "0.1.5"              # 二元正态分布（奇异期权用）
+rand = "0.9.2"               # 随机数（蒙特卡洛模拟用）
+rand_distr = "0.5.1"         # 分布抽样
+rayon = "1.11.0"
+statrs = "0.18.0"            # 统计分布（正态分布CDF等）
