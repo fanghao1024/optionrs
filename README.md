@@ -32,11 +32,11 @@ statrs = "0.18.0"
 ```Plain Text
 optionpricing/          # crate 根目录
 ├── Cargo.toml          # 依赖/配置文件
-├── README.md           # 核心说明文档（必须放这里）
+├── README.md           # 核心说明文档
 ├── src/                # 源码目录
 │   ├── lib.rs
 │   │   ├──
-│   ├── black_scholes/mod.rs
+│   ├── black_scholes/mod.rs #欧式期权定价相关方法
 │   └── ...
 └── tests/              # 集成测试目录
     └── pricing_consistency.rs
