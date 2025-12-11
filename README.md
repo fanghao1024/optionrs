@@ -3,7 +3,7 @@
 A high-performance, production-grade option pricing library for Rust, supporting classic pricing models (Black-Scholes, Binomial Tree, Monte Carlo, PDE numerical calculation) and exotic options (barrier, Asian, forward-start,etc).
 
 [![Crates.io](https://img.shields.io/crates/v/optionrs.svg)](https://crates.io/crates/optionrs)
-[![Docs.rs](https://docs.rs/optionpricing/badge.svg)](https://docs.rs/optionrs)
+[![Docs.rs](https://docs.rs/optionrs/badge.svg)](https://docs.rs/optionrs)
 [![License: MIT/Apache-2.0](https://img.shields.io/badge/License-MIT%2FApache--2.0-blue.svg)](./LICENSE)
 [![CI](https://github.com/fanghao1024/optionrs/actions/workflows/ci.yml/badge.svg)](https://github.com/fanghao1024/optionrs/actions)
 
