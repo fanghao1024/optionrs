@@ -114,6 +114,7 @@ pub fn floating_striking_call_mc_se(S:f64,r:f64,sigma:f64,q:f64,SMin:f64,T:f64,N
     (CallV,StdError)
 }
 
+// 欧式篮子看涨期权蒙特卡洛定价
 pub fn european_basket_call_mc(S:&[f64],K:f64,r:f64,cov:&Vec<Vec<f64>>,q:&[f64],w:&[f64],T:f64,M:usize)->Result<f64,String>{
     // ======================== 欧式篮子看涨期权蒙特卡洛定价函数 ========================
     /// 欧式篮子看涨期权蒙特卡洛定价
@@ -187,6 +188,7 @@ pub fn european_basket_call_mc(S:&[f64],K:f64,r:f64,cov:&Vec<Vec<f64>>,q:&[f64],
 }
 
 //Monte Carlo Valuation with an Antithetic Variate
+//使用对偶变量法的浮动执行价回望看涨期权蒙特卡洛定价（含标准误差）
 pub fn floating_striking_call_mc_av_se(S:f64,r:f64,sigma:f64,q:f64,SMin:f64,T:f64,N:usize,M:usize)->Result<(f64,f64),String>{
     /// Monte Carlo Valuation of Path-Dependent Options
     /// 路径依赖期权的蒙特卡洛定价
@@ -234,6 +236,7 @@ pub fn floating_striking_call_mc_av_se(S:f64,r:f64,sigma:f64,q:f64,SMin:f64,T:f6
     return Ok((CallV,stdError))
 }
 
+// 用几何平均价格作为控制变量，定价含过去价格的算术平均价格看(亚式期权)
 pub fn average_price_call_mc(S:f64,K:f64,r:f64,sigma:f64,q:f64,Avg:f64,TPast:f64,TFuture:f64,N:usize,M1:usize,M2:usize)->(f64,f64){
     ///用几何平均作为平均价格看涨期权定价中算术平均的控制变量，用事前样本估计贝塔值
     /// 输入变量：

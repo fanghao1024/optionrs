@@ -199,6 +199,7 @@ pub fn american_spread_put_binomial(S:[f64;2],K:f64,r:f64,sigma:[f64;2],rho:f64,
     }
     putv[0][0]
 }
+//美式看跌期权二叉树定价（Black-Scholes调整）
 pub fn american_put_binomial_bs(S0:f64,K:f64,r:f64,sigma:f64,q:f64,T:f64,N:usize)->f64{
 
     let dt=T/N as f64;
@@ -227,8 +228,8 @@ pub fn american_put_binomial_bs(S0:f64,K:f64,r:f64,sigma:f64,q:f64,T:f64,N:usize
     }
     PutV[0]
 }
-
-pub fn American_Put_Binomial_BS_RE(S:f64,K:f64,r:f64,sigma:f64,q:f64,T:f64,N:usize)->Result<f64,&'static str>{
+//美式看跌期权二叉树定价（Black-Scholes调整，Richardson外推）
+pub fn american_put_binomial_bs_re(S:f64,K:f64,r:f64,sigma:f64,q:f64,T:f64,N:usize)->Result<f64,&'static str>{
     if N%2!=0{
         return Err("the number of periods N must be divisible by 2");
     }

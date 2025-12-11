@@ -67,8 +67,8 @@ pub fn Simulated_Delta_Hedge_Profit_Forward(F0:f64,K:f64,r:f64,sigma:f64,T:f64,T
 
     let log_F0=F0.ln();
     let P0T=E.powf(-r*Tf);
-    let forwards0=crate::exotic_options::black_call_delta(F0,K,P0T,sigma,T); //初始德尔塔头寸
-    let cash=crate::exotic_options::black_call_2(F0,K,P0T,sigma,T); //初始期权价格
+    let forwards0=crate::generic::black_call_delta(F0,K,P0T,sigma,T); //初始德尔塔头寸
+    let cash=crate::generic::black_call_2(F0,K,P0T,sigma,T); //初始期权价格
 
     let mut profit=vec![0.0;M];
     let mut rng=rand::rng();
@@ -90,7 +90,7 @@ pub fn Simulated_Delta_Hedge_Profit_Forward(F0:f64,K:f64,r:f64,sigma:f64,T:f64,T
             let remaining_tf=Tf-j as f64*dt;
             let p=E.powf(-r*remaining_tf);
             let remaining_t=T-j as f64*dt;
-            forwards=crate::exotic_options::black_call_delta(f,K,p,sigma,remaining_t)
+            forwards=crate::generic::black_call_delta(f,K,p,sigma,remaining_t)
         }
         let increment_random:f64=rng.sample(StandardNormal);
         log_f=log_f+drift+sig_sqrdt*increment_random;

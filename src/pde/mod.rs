@@ -1,6 +1,7 @@
 use super::*;
 use crate::utils::crank_nicolson;
 
+
 pub fn european_call_crank_nicolson(S0:f64,K:f64,r:f64,sigma:f64,q:f64,T:f64,N:usize,M:usize,dist:f64)->Result<f64,&'static str>{
     /// 欧式看涨期权Crank-Nicolson定价函数
     ///

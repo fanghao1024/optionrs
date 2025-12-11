@@ -8,6 +8,7 @@ pub mod binomial;
 pub mod exotic_options;
 pub mod utils;
 mod pde;
+mod generic;
 
 // 引入外部依赖
 use rand::Rng;
