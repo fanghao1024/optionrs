@@ -193,7 +193,7 @@ pub fn black_scholes_call_implied_vol(S:f64,K:f64,r:f64,q:f64,T:f64,CallPrice:f6
     let mut lower=0.0;
     let mut upper=1.0;
 
-    let mut flower=european_call(S,K,r,lower,q,T)-CallPrice;
+    let flower=european_call(S,K,r,lower,q,T)-CallPrice;
     let mut fupper:f64=european_call(S,K,r,upper,q,T)-CallPrice;
 
     while fupper<0.0{

@@ -85,10 +85,10 @@ pub fn american_put_binomial_delta_gamma(S0:f64,K:f64,r:f64,sigma:f64,q:f64,T:f6
     let dpd=(-r*dt).exp()*pd;
     let u2=u*u;
 
-    let mut S=S0*d.powi(NewN as i32);
+    let S=S0*d.powi(NewN as i32);
     let mut PutV=vec![0.0;NewN+1];
 
-    let mut S=S0*d.powi(NewN as i32);
+    let S=S0*d.powi(NewN as i32);
     PutV[0]=(K-S).max(0.0);
     for i in (2..=NewN-1).rev(){
         let mut S_cur=S0*d.powi(i as i32);

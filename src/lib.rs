@@ -12,10 +12,8 @@ mod pde;
 // 引入外部依赖
 use rand::Rng;
 use rand_distr::StandardNormal;
-use std::io;
-use std::thread::Thread;
-use statrs::distribution::{Normal, Continuous, ContinuousCDF,MultivariateNormal};
-use std::f64::{consts::E,EPSILON};
+use statrs::distribution::{Normal, Continuous, ContinuousCDF};
+use std::f64::consts::E;
 use rayon::prelude::*;
 use owens_t;
 
