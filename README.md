@@ -85,7 +85,7 @@ optionpricing/
 │   │   ├──calc_percentage      # 计算数组的指定百分位数
 │   │   ├──Simulated_Delta_Hedge_Profit_Forward      # 模拟Delta对冲策略的利润，并返回指定百分位数
 │   │   ├──cholesky      # Cholesky 分解（乔列斯基分解）
-│   │   ├──cholesky_vec      # 对Vec<Vec<f64>>形式的矩阵进行Cholesky分解
+│   │   ├──cholesky_vec      # Cholesky分解函数的重载
 │   │   └──crank_nicolson      # Crank-Nicolson算法核心函数
 │   └── ...
 └── tests/              # 集成测试目录
