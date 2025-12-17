@@ -1,8 +1,7 @@
 /// define the interface for exercise rules
 /// 定义行权规则接口
 pub trait ExerciseRule{
-    /// Determine whether to exercise the right at a given time point
-    ///
+    /// Determine whether to exercise the right at a given time point <br>
     /// 判断在给定时点是否应行权
     /// # parameters
     /// + time: time until expiration(in year) 距离到期的时间（年）
@@ -18,7 +17,7 @@ pub trait ExerciseRule{
     ) ->bool;
 }
 
-/// European exercise rule
+/// European exercise rule <br>
 /// 欧式行权规则
 #[derive(Debug,Clone,Copy)]
 pub struct EuropeanExercise;
@@ -35,7 +34,7 @@ impl ExerciseRule for EuropeanExercise{
     }
 }
 
-/// American exercise rule
+/// American exercise rule <br>
 /// 美式行权规则
 pub struct AmericanExercise;
 

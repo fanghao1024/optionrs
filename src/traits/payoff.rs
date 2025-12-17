@@ -2,16 +2,14 @@
 ///
 /// 定义期权收益计算接口
 pub trait Payoff{
-    /// calculate option returns at a given assert price
-    ///
+    /// calculate option returns at a given assert price <br>
     /// 计算给定的资产价格下的期权收益
-    ///
+    /// ### parameter
     /// - spot: underlying assert price 标的资产价格
     fn payoff(&self,spot:f64)->f64;
 
     /// Calculate the returns of path dependent options
-    /// (implemented as non path dependent by default)
-    ///
+    /// (implemented as non path dependent by default) <br>
     /// 计算路径依赖期权的收益（默认实现为非路径依赖）
     /// - path: underlying path 标的资产路径
     fn path_dependent_payoff(&self,path:&[f64])->f64{
@@ -21,7 +19,7 @@ pub trait Payoff{
     }
 }
 
-/// Call option
+/// Call option<br>
 /// 看涨期权
 #[derive(Debug,Clone,Copy)]
 pub struct CallPayoff{
@@ -34,7 +32,7 @@ impl Payoff for CallPayoff{
     }
 }
 
-/// Put option
+/// Put option <br>
 /// 看跌期权
 #[derive(Debug,Clone,Copy)]
 pub struct PutPayoff{

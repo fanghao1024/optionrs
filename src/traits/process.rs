@@ -6,7 +6,7 @@ use crate::errors::*;
 pub trait StochasticProcess{
     /// Initialize the random generator
     /// 初始化随机生成器
-    fn init_rng(&mut self,rng:impl Rng);
+    fn init_rng(&mut self,rng:impl Rng) where Self:Sized;
 
     /// Simulate the price for the next time step
     /// 模拟下一个时间步的价格
