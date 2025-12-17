@@ -1,5 +1,5 @@
-mod engine;
-mod analytic;
-mod binomial;
-mod monte_carlo;
-mod pde;
+pub mod engine;
+pub mod analytic;
+pub mod binomial;
+pub mod monte_carlo;
+pub mod pde;
