@@ -8,3 +8,4 @@ pub mod params;
 pub mod traits;
 pub mod simulation;
 pub mod errors;
+mod utils;
