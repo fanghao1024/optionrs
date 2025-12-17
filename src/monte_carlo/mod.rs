@@ -2,6 +2,17 @@
 
 use super::*;
 use crate::utils::cholesky_vec;
+use std::error::Error;
+use std::fmt;
+
+///特用于蒙特卡洛模拟的错误类型
+/// Special error for monte carlo simulating pricing
+#[derive(Debug)]
+pub enum MonteCarloError{
+    InvalidParameter(String),
+    NumericalError(String)
+}
+
 
 /// 欧式看涨期权蒙特卡洛定价（含Delta估计）
 pub fn european_call_mc(S:f64,K:f64,r:f64,sigma:f64,q:f64,T:f64,M:usize)->(f64,f64,f64){
@@ -72,23 +83,26 @@ pub fn european_call_garch_mc(S:f64,K:f64,r:f64,sigma0:f64,q:f64,T:f64,N:usize,k
     (CallV,StdError)
 }
 
-/// 浮动执行价回望看涨期权蒙特卡洛定价（含标准误差）
+/// Monte Carlo Valuation of Path-Dependent Options With Standard Error
+///
+/// 路径依赖期权的蒙特卡洛定价
+///
+/// # 参数
+/// - `S` - 初始股票价格 (initial stock price)
+/// - `r` - 无风险利率 (risk-free rate)
+/// - `sigma` - 波动率 (volatility)
+/// - `q` - 红利支付率 (dividend yield)
+/// - `T` - 剩余到期时间 (remaining time to maturity)
+/// - `SMin` - 合约创设至今标的资产价格最小值 (minimum during previous life of contract)
+/// - `N` - 期限个数 (number of time period)
+/// - `M` - 模拟次数 (number of simulations)
+///
+/// # 返回值
+/// return a tuple with two f64 返回一个包含两个`f64`值的元组 `(call_value, standard_error)`：
+/// - `call_value` - 看涨期权的估值
+/// - `standard_error` - 估值的标准误差
 pub fn floating_striking_call_mc_se(S:f64,r:f64,sigma:f64,q:f64,SMin:f64,T:f64,N:f64,M:f64)->(f64,f64){
-    /// Monte Carlo Valuation of Path-Dependent Options
-    /// 路径依赖期权的蒙特卡洛定价
-    /// 输入参数 input parameters
-    /// S = initial stock price 初始股票价格
-    /// r = risk-free rate 无风险利率
-    /// sigma = volatility 波动率
-    /// q = dividend yield 红利支付率
-    /// T = remaining time to maturity 剩余到期时间
-    /// SMin = minimum during previous life of contract 从合约创设到当前时刻为止标的资产价格的最小值
-    /// N = number of time period 期限个数
-    /// M = number of simulations 模拟次数
-    ///
-    /// output results:
-    /// call value
-    /// standard error of call value
+
     let dt=T/N;
     let nudt=(r-q-0.5*sigma.powi(2))*dt;
     let sigsdt=sigma*dt.sqrt();
