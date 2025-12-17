@@ -6,3 +6,4 @@ mod products;
 mod core;
 mod params;
 mod traits;
+mod simulation;
