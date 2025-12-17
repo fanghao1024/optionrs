@@ -1,3 +1,3 @@
-mod brownian;
-mod time_series;
-mod stochastic_volatility;
+pub mod brownian;
+pub mod time_series;
+pub mod stochastic_volatility;
