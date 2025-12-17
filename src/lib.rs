@@ -3,3 +3,4 @@
 // 导出所有公共模块和API
 
 mod products;
+mod core;
