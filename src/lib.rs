@@ -2,8 +2,9 @@
 
 // 导出所有公共模块和API
 
-mod products;
-mod core;
-mod params;
-mod traits;
-mod simulation;
+pub mod products;
+pub mod core;
+pub mod params;
+pub mod traits;
+pub mod simulation;
+pub mod errors;
