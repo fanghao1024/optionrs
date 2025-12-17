@@ -4,3 +4,4 @@
 
 mod products;
 mod core;
+mod params;
