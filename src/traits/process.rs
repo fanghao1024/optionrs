@@ -4,7 +4,7 @@ use std::fmt::Debug;
 
 /// Random process interface
 /// 随机过程接口
-pub trait StochasticProcess:Debug{
+pub trait StochasticProcess:Debug+Send+Sync{
     ///To solve dyn Clone problem
     fn clone_box(&self) -> Box<dyn StochasticProcess>;
     /// Initialize the random generator

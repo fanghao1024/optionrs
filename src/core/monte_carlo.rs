@@ -2,6 +2,7 @@
 //! 蒙特卡洛引擎的具体实现
 use rand::{Rng, SeedableRng,rngs::StdRng};
 use std::any::Any;
+use std::sync::Arc;
 use crate::traits::engine::{PriceEngine,GreeksEngine,MonteCarloEngineExt};
 use crate::traits::{payoff::Payoff,exercise::ExerciseRule,process::StochasticProcess};
 use crate::params::common::CommonParams;
@@ -12,15 +13,18 @@ use crate::errors::*;
 pub struct MonteCarloEngine{
     num_simulations: usize,        //模拟次数
     time_steps: usize,             //时间步数
-    process: Option<Box<dyn StochasticProcess>>, //随机过程
-    rng: StdRng,                   //随机数生成器
+    process: Option<Arc<dyn StochasticProcess>>, //随机过程
     use_antithetic:bool,           //是否启用对偶
+    seed:u64,                   //随机数种子
 }
 
-impl MonteCarloEngine: {
+impl MonteCarloEngine {
     pub fn new(
         num_simulations: usize,
         time_steps: usize,
+        process: Option<Arc<dyn StochasticProcess>>,
+        use_antithetic:bool,
+        seed:u64
     ) -> Result<Self>{
         if num_simulations<1000{
             return Err(OptionError::InvalidParameter("Simulation number cannot be below 1000".to_string()));
@@ -31,9 +35,9 @@ impl MonteCarloEngine: {
         Ok(Self{
             num_simulations,
             time_steps,
-            process:None,
-            rng:StdRng::from_os_rng(),
-            use_antithetic:false,
+            process,
+            use_antithetic,
+            seed,
         })
     }
 
