@@ -1,3 +1,4 @@
+use std::any::Any;
 /// define the interface for exercise rules
 /// 定义行权规则接口
 pub trait ExerciseRule{
@@ -15,6 +16,8 @@ pub trait ExerciseRule{
         intrinsic_value:f64,
         continuation_value:f64
     ) ->bool;
+
+    fn as_any(&self)->&dyn Any;
 }
 
 /// European exercise rule <br>
@@ -32,6 +35,10 @@ impl ExerciseRule for EuropeanExercise{
     ) -> bool {
         time<1e-9
     }
+
+    fn as_any(&self)->&dyn Any{
+        self
+    }
 }
 
 /// American exercise rule <br>
@@ -41,5 +48,8 @@ pub struct AmericanExercise;
 impl ExerciseRule for AmericanExercise{
     fn should_exercise(&self, time: f64, spot: f64, intrinsic_value: f64, continuation_value: f64) -> bool {
         intrinsic_value>continuation_value
+    }
+    fn as_any(&self)->&dyn Any{
+        self
     }
 }

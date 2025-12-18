@@ -4,6 +4,7 @@ use crate::errors::*;
 use crate::traits::exercise::ExerciseRule;
 use crate::traits::payoff::Payoff;
 use std::any::Any;
+use std::fmt::Debug;
 
 /// The interface for pricing engine <br>
 /// 定价引擎接口
