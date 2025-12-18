@@ -5,7 +5,7 @@ use crate::traits::engine::{GreeksEngine, PriceEngine};
 use crate::params::common::CommonParams;
 use crate::traits::{payoff::Payoff, exercise::ExerciseRule};
 
-use super::analytics::AnalyticEngine;
+use super::analytic::AnalyticEngine;
 use super::monte_carlo::MonteCarloEngine;
 use super::binomial::BinomialEngine;
 use super::pde::PDEEngine;

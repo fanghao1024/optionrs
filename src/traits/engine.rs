@@ -24,7 +24,7 @@ pub trait PriceEngine:Send+Sync{
 }
 
 /// 解析解计算器插件Trait(核心：插件化的核心契约）
-pub trait AnalyticCalculator:Send+Sync{
+pub trait AnalyticCalculator:Debug+Send+Sync{
     fn supported_types(&self)->Vec<payoff::AnalyticPayoffType>;
 
     /// 计算解析解价格（插件核心逻辑）
@@ -139,7 +139,7 @@ pub trait PDEEngineExt:PriceEngine{
 
 /// PDE boundary condition interface
 /// PDE边界条件接口
-pub trait BoundaryConditon:Debug{
+pub trait BoundaryConditon:Debug+Send+Sync{
     fn upper_boundary(&self,t:f64)->Result<f64>{return Err(OptionError::NotImplemented("BoundaryConditon:upper_boundary".to_string()));}
     fn lower_boundary(&self,t:f64)->Result<f64>{return Err(OptionError::NotImplemented("BoundaryConditon:lower_boundary".to_string()));}
     fn final_condition(&self,spot:f64)->Result<f64>{return Err(OptionError::NotImplemented("BoundaryConditon:final_condition".to_string()));}

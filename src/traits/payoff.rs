@@ -1,7 +1,7 @@
 use std::any::Any;
 
 /// 解析解期权类型枚举（标识不同期权类型)
-#[derive(Debug,Clone,Copy,PartialEq)]
+#[derive(Debug,Clone,Copy,PartialEq,Hash,Eq)]
 pub enum AnalyticPayoffType{
     // 基础类型
     VanillaCall,
