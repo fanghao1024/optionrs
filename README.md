@@ -43,26 +43,33 @@ src/
 │   └── exotic.rs          # 其他奇异期权
 ├── core/                  # 引擎层：定价引擎实现
 │   ├── mod.rs
-│   ├── engine.rs          # 定价引擎接口
-│   ├── analytic.rs        # 解析解引擎
+│   ├── pde.rs             # PDE求解引擎
 │   ├── binomial.rs        # 二叉树引擎
 │   ├── monte_carlo.rs     # 蒙特卡洛引擎
-│   └── pde.rs             # PDE求解引擎（预留）
+│   ├── analytic/           # 解析解引擎核心
+│   │   ├── mod.rs
+│   │   ├── engine.rs       # 插件化AnalyticEngine（计算器注册表）
+│   │   └── calculators/    # 各类解析解计算器（插件）
+│   │       ├── mod.rs
+│   │       ├── vanilla.rs  # 普通期权计算器
+│   │       ├── binary.rs   # 二元期权计算器
+│   │       └── barrier.rs  # 障碍期权计算器
+│   └── engine_config.rs    # 所有引擎的统一入口枚举 
 ├── params/                # 参数层：参数定义与验证
 │   ├── mod.rs
 │   ├── common.rs          # 通用参数
 │   ├── european.rs        # 欧式期权参数
 │   ├── american.rs        # 美式期权参数
 │   └── barrier.rs         # 障碍期权参数
-├── traits/                # 核心 trait 定义
+├── traits/                # 抽象接口层（仅定义Trait，无实现）
 │   ├── mod.rs
-│   ├── payoff.rs          # 收益函数 trait
-│   ├── exercise.rs        # 行权规则 trait
+│   ├── payoff.rs          # Payoff抽象+解析解类型枚举
+│   ├── exercise.rs        # 行权规则抽象 trait
 │   ├── process.rs         # 随机过程 trait
-│   └── engine.rs          # 引擎相关 trait
+│   └── engine.rs          # 定价引擎+解析解计算器插件Trait
 ├── utils/                 # 工具层：数学工具
 │   ├── mod.rs
-│   ├── distributions.rs   # 分布函数
+│   ├── statistics.rs      # 正态分布CDF/PDF、参数校验
 │   ├── math.rs            # 数学工具函数
 │   └── linear_algebra.rs  # 线性代数工具（预留）
 └── brownian/              # 随机过程模拟

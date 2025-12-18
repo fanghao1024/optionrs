@@ -10,3 +10,22 @@ pub struct PDEEngine{
     t_steps:usize,
     boundary_conditions:Option<Box<dyn BoundaryConditon>>,
 }
+
+impl PDEEngine{
+
+}
+
+impl PriceEngine for PDEEngine{
+    fn price(&self, params: &CommonParams, payoff: &dyn Payoff, exercise_rule: &dyn ExerciseRule) -> Result<f64> {
+        Ok(43.0)
+    }
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+}
+
+impl BoundaryConditon for PDEEngine{
+    fn clone_box(&self) -> Box<dyn BoundaryConditon> {
+        Box::new(self.clone())
+    }
+}

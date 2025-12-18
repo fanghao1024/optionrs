@@ -75,7 +75,7 @@ impl PriceEngine for MonteCarloEngine {
         let mut process=match &self.process{
             Some(p) => p.clone_box(),
             None=>{
-                let drift=params.risk_free_rate()-params.dividened_yield();
+                let drift=params.risk_free_rate()-params.dividend_yield();
                 let gbm=GeometricBrownianMotion::new(drift,params.volatility())?;
                 Box::new(gbm)
             }

@@ -5,7 +5,7 @@ pub struct CommonParams{
     spot:f64,
     risk_free_rate:f64,
     volatility:f64,
-    dividened_yield:f64,
+    dividend_yield:f64,
     time_to_maturity:f64,
 }
 
@@ -16,7 +16,7 @@ impl CommonParams{
         spot:f64,
         risk_free_rate:f64,
         volatility:f64,
-        dividened_yield:f64,
+        dividend_yield:f64,
         time_to_maturity:f64,
     )->Result<Self>{
         if spot<=0.0{
@@ -32,7 +32,7 @@ impl CommonParams{
             spot,
             risk_free_rate,
             volatility,
-            dividened_yield,
+            dividend_yield,
             time_to_maturity,
         })
     }
@@ -41,7 +41,7 @@ impl CommonParams{
     pub fn spot(&self) -> f64{self.spot}
     pub fn risk_free_rate(&self) -> f64{self.risk_free_rate}
     pub fn volatility(&self) -> f64{self.volatility}
-    pub fn dividened_yield(&self) -> f64{self.dividened_yield}
+    pub fn dividend_yield(&self) -> f64{self.dividend_yield}
     pub fn time_to_maturity(&self) -> f64{self.time_to_maturity}
 
     /// Create a parameter copy of minor pertubations(for calculating Greek letters)<br>
@@ -51,7 +51,7 @@ impl CommonParams{
             new_spot,
             self.risk_free_rate,
             self.volatility,
-            self.dividened_yield,
+            self.dividend_yield,
             self.time_to_maturity,
         )
     }
@@ -63,7 +63,7 @@ impl CommonParams{
             self.spot,
             self.risk_free_rate,
             new_volatility,
-            self.dividened_yield,
+            self.dividend_yield,
             self.time_to_maturity,
         )
     }
@@ -75,7 +75,7 @@ impl CommonParams{
             self.spot,
             self.risk_free_rate,
             self.volatility,
-            self.dividened_yield,
+            self.dividend_yield,
             new_maturity,
         )
     }

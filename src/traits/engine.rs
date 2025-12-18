@@ -127,7 +127,14 @@ pub trait PDEEngineExt:PriceEngine{
 /// PDE boundary condition interface
 /// PDE边界条件接口
 pub trait BoundaryConditon:Debug{
-    fn upper_boundary(&self,t:f64)->f64;
-    fn lower_boundary(&self,t:f64)->f64;
-    fn final_condition(&self,spot:f64)->f64;
+    fn upper_boundary(&self,t:f64)->Result<f64>{return Err(OptionError::NotImplemented("BoundaryConditon:upper_boundary".to_string()));}
+    fn lower_boundary(&self,t:f64)->Result<f64>{return Err(OptionError::NotImplemented("BoundaryConditon:lower_boundary".to_string()));}
+    fn final_condition(&self,spot:f64)->Result<f64>{return Err(OptionError::NotImplemented("BoundaryConditon:final_condition".to_string()));}
+    fn clone_box(&self) -> Box<dyn BoundaryConditon>;
+}
+
+impl Clone for Box<dyn BoundaryConditon> {
+    fn clone(&self) -> Box<dyn BoundaryConditon> {
+        self.clone_box()
+    }
 }

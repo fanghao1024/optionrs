@@ -27,7 +27,7 @@ impl PriceEngine for BinomialEngine {
     ) -> Result<f64> {
         let s=params.spot();
         let r=params.risk_free_rate();
-        let q=params.dividened_yield();
+        let q=params.dividend_yield();
         let sigma=params.volatility();
         let t=params.time_to_maturity();
 

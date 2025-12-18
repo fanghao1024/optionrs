@@ -1,19 +1,22 @@
 use std::any::Any;
+use std::sync::Arc;
+
 use crate::traits::engine::{GreeksEngine, PriceEngine};
 use crate::params::common::CommonParams;
 use crate::traits::{payoff::Payoff, exercise::ExerciseRule};
+
 use super::analytic::AnalyticEngine;
 use super::monte_carlo::MonteCarloEngine;
 use super::binomial::BinomialEngine;
 use super::pde::PDEEngine;
 use crate::errors::*;
 
-#[derive(Debug)]
+#[derive(Debug,Clone)]
 pub enum EngineConfig{
-    Analytic(AnalyticEngine),
-    Binomial(BinomialEngine),
-    MonteCarlo(MonteCarloEngine),
-    PDE(PDEEngine),
+    Analytic(Arc<AnalyticEngine>),
+    Binomial(Arc<BinomialEngine>),
+    MonteCarlo(Arc<MonteCarloEngine>),
+    PDE(Arc<PDEEngine>),
 }
 
 impl PriceEngine for EngineConfig{

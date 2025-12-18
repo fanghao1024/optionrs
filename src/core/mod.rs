@@ -1,4 +1,4 @@
-pub mod engine;
+pub mod engine_config;
 pub mod analytic;
 pub mod binomial;
 pub mod monte_carlo;

@@ -13,7 +13,7 @@ impl AnalyticEngine {
     fn calculate_d1_d2(&self,params:&CommonParams,strike:f64)->Result<(f64,f64)>{
         let s=params.spot();
         let r=params.risk_free_rate();
-        let q=params.dividened_yield();
+        let q=params.dividend_yield();
         let sigma=params.volatility();
         let t=params.time_to_maturity();
         let k=strike;
