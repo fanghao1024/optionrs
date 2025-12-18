@@ -1,9 +1,12 @@
 use rand::Rng;
 use crate::errors::*;
+use std::fmt::Debug;
 
 /// Random process interface
 /// 随机过程接口
-pub trait StochasticProcess{
+pub trait StochasticProcess:Debug{
+    ///To solve dyn Clone problem
+    fn clone_box(&self) -> Box<dyn StochasticProcess>;
     /// Initialize the random generator
     /// 初始化随机生成器
     fn init_rng(&mut self,rng:impl Rng) where Self:Sized;
@@ -45,5 +48,18 @@ pub trait StochasticProcess{
             path.push(next_price);
         }
         Ok(path)
+    }
+
+    fn simulate_antithetic_path(
+        &mut self,
+        initial_price:f64,
+        time_horizon:f64,
+        steps:usize,
+    )->Result<(Vec<f64>,Vec<f64>)>{Err(OptionError::NotImplemented("Simulate antithetic_path function not implemented".into()))}
+}
+
+impl Clone for Box<dyn StochasticProcess> {
+    fn clone(&self) -> Box<dyn StochasticProcess> {
+        self.clone_box()
     }
 }

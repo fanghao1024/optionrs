@@ -1,0 +1,42 @@
+use std::any::Any;
+use crate::traits::engine::{GreeksEngine, PriceEngine};
+use crate::params::common::CommonParams;
+use crate::traits::{payoff::Payoff, exercise::ExerciseRule};
+use super::analytic::AnalyticEngine;
+use super::monte_carlo::MonteCarloEngine;
+use super::binomial::BinomialEngine;
+use super::pde::PDEEngine;
+use crate::errors::*;
+
+#[derive(Debug)]
+pub enum EngineConfig{
+    Analytic(AnalyticEngine),
+    Binomial(BinomialEngine),
+    MonteCarlo(MonteCarloEngine),
+    PDE(PDEEngine),
+}
+
+impl PriceEngine for EngineConfig{
+    fn price(
+        &self,
+        params: &CommonParams,
+        payoff: &dyn Payoff,
+        exercise_rule: &dyn ExerciseRule
+    ) -> Result<f64> {
+        match self{
+            EngineConfig::Analytic(engine) => {engine.price(params, payoff, exercise_rule)},
+            EngineConfig::Binomial(engine) => {engine.price(params, payoff, exercise_rule)},
+            EngineConfig::MonteCarlo(engine) => {engine.price(params, payoff, exercise_rule)},
+            EngineConfig::PDE(engine) => {engine.price(params, payoff, exercise_rule)},
+        }
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        match self {
+            EngineConfig::Analytic(engine) => engine.as_any(),
+            EngineConfig::MonteCarlo(engine)=>engine.as_any(),
+            EngineConfig::Binomial(engine)=>engine.as_any(),
+            EngineConfig::PDE(engine)=>engine.as_any(),
+        }
+    }
+}

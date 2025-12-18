@@ -53,6 +53,10 @@ impl SimpleBrownianMotion{
 }
 
 impl StochasticProcess for SimpleBrownianMotion{
+    fn clone_box(&self) -> Box<dyn StochasticProcess> {
+        Box::new(self.clone())
+    }
+
     fn init_rng(&mut self, mut rng: impl Rng)
     where
         Self: Sized,
@@ -94,6 +98,8 @@ impl StochasticProcess for SimpleBrownianMotion{
         }
         Ok(path)
     }
+
+
 }
 
 /// 几何布朗运动（Geometric Brownian Motion, GBM）
@@ -140,9 +146,29 @@ impl GeometricBrownianMotion{
     pub fn reset_rng(&mut self,seed:u64){
         self.rng = StdRng::seed_from_u64(seed);
     }
+
+    fn next_antithetic_step(&self,current_price:f64,time_step:f64,epsilon:f64)->Result<f64>{
+        if time_step<0.0{
+            return Err(OptionError::InvalidParameter("TimeStep must be 0 or positive".to_string()));
+        }
+        if current_price<0.0{
+            return Err(OptionError::InvalidParameter("Current price must be positive".to_string()));
+        }
+        let dt=time_step;
+        let sqrt_dt=dt.sqrt();
+        let anti_epsilon=-epsilon;
+        let drift_term=(self.drift-0.5*self.volatility.powi(2))*dt;
+        let diffusion_term=self.volatility*anti_epsilon*dt.sqrt();
+        Ok(current_price*(drift_term+diffusion_term).exp())
+
+    }
 }
 
 impl StochasticProcess for GeometricBrownianMotion{
+    fn clone_box(&self) -> Box<dyn StochasticProcess> {
+        Box::new(self.clone())
+    }
+
     fn init_rng(&mut self, mut rng: impl Rng)
     where
         Self: Sized,
@@ -173,6 +199,9 @@ impl StochasticProcess for GeometricBrownianMotion{
         if time_horizon<0.0{
             return Err(OptionError::InvalidParameter("Time horizon must be 0 or positive".to_string()));
         }
+        if steps==0{
+            return Err(OptionError::InvalidParameter("Steps must be positive".to_string()));
+        }
 
         let mut path=Vec::with_capacity(steps+1);
         path.push(initial_price);
@@ -187,6 +216,41 @@ impl StochasticProcess for GeometricBrownianMotion{
             path.push(log_s.exp());
         }
         Ok(path)
+    }
+
+    fn simulate_antithetic_path(
+        &mut self,
+        initial_price: f64,
+        time_horizon: f64,
+        steps: usize
+    ) -> Result<(Vec<f64>,Vec<f64>)> {
+        if initial_price<=0.0{
+            return Err(OptionError::InvalidParameter("Initial price must be 0 or positive".to_string()));
+        }
+        if time_horizon<0.0{
+            return Err(OptionError::InvalidParameter("Time horizon must be 0 or positive".to_string()));
+        }
+        if steps==0{
+            return Err(OptionError::InvalidParameter("Steps must be positive".to_string()));
+        }
+        let mut path1=Vec::with_capacity(steps+1);
+        let mut path2=Vec::with_capacity(steps+1);
+        path1.push(initial_price);
+        path2.push(initial_price);
+        let dt=time_horizon/steps as f64;
+        let drift_term=self.drift*dt;
+        let diffusion_term=self.volatility*dt.sqrt();
+        let mut log_s1=initial_price.ln();
+        let mut log_s2=initial_price.ln();
+        for _ in 1..=steps{
+            let epsilon1:f64=self.rng.sample(StandardNormal);
+            let epsilon2=-epsilon1;
+            log_s1+=drift_term+diffusion_term*epsilon1;
+            log_s2+=drift_term+diffusion_term*epsilon2;
+            path1.push(log_s1.exp());
+            path2.push(log_s2.exp());
+        }
+        Ok((path1,path2))
     }
 }
 

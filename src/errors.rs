@@ -19,6 +19,9 @@ pub enum OptionError{
 
     #[error("Not implemented: {0}")]
     NotImplemented(String),
+    
+    #[error("Not set: {0}")]
+    NotSet(String),
 
     #[error("Data is empty")]
     EmptyData,

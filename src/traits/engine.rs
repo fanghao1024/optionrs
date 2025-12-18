@@ -3,6 +3,7 @@ use crate::traits::{payoff,process,exercise};
 use crate::errors::*;
 use crate::traits::exercise::ExerciseRule;
 use crate::traits::payoff::Payoff;
+use std::any::Any;
 
 /// The interface for pricing engine <br>
 /// 定价引擎接口
@@ -16,6 +17,8 @@ pub trait PriceEngine{
         exercise_rule:&dyn ExerciseRule,
     )->Result<f64>;
 
+    /// 向下转型为Any
+    fn as_any(&self) -> &dyn Any;
 }
 
 /// Engine interface supporting Greek letter calculation
@@ -24,34 +27,61 @@ pub trait GreeksEngine:PriceEngine{
     /// calculate Δ
     fn delta(
         &self,
-        params:&CommonParams,
-        payoff:&dyn Payoff,
-        exercise_rule:&dyn ExerciseRule,
-    )->Result<f64>;
+        params: &CommonParams,
+        payoff: &dyn Payoff,
+        exercise_rule: &dyn ExerciseRule
+    ) -> Result<f64> {
+        let h=0.01*params.spot();
+        let params_up=params.with_spot(params.spot()+h)?;
+        let params_down=params.with_spot(params.spot()-h)?;
+
+        let price_up=self.price(&params_up,payoff,exercise_rule)?;
+        let price_down=self.price(&params_down,payoff,exercise_rule)?;
+        Ok((price_up-price_down)/(2.0*h))
+    }
 
     /// calculate Γ
     fn gamma(
         &self,
-        params:&CommonParams,
-        payoff:&dyn Payoff,
-        exercise_rule:&dyn ExerciseRule,
-    )->Result<f64>;
+        params: &CommonParams,
+        payoff: &dyn Payoff,
+        exercise_rule: &dyn ExerciseRule
+    ) -> Result<f64> {
+        let h=0.01*params.spot();
+        let params_up=params.with_spot(params.spot()+h)?;
+        let params_down=params.with_spot(params.spot()-h)?;
+        let params_middle=params.clone();
+
+        let price_up=self.price(&params_up,payoff,exercise_rule)?;
+        let price_down=self.price(&params_down,payoff,exercise_rule)?;
+        let price_middle=self.price(&params_middle,payoff,exercise_rule)?;
+
+        Ok((price_up-2.0*price_middle+price_down)/(h*h))
+    }
 
     /// calculate vega
     fn vega(
         &self,
-        params:&CommonParams,
-        payoff:&dyn Payoff,
-        exercise_rule:&dyn ExerciseRule,
-    )->Result<f64>;
+        params: &CommonParams,
+        payoff: &dyn Payoff,
+        exercise_rule: &dyn ExerciseRule
+    ) -> Result<f64> {
+        let h=0.01;
+        let params_up=params.with_volatility(params.volatility()+h)?;
+        let params_down=params.with_volatility(params.volatility()-h)?;
 
-    /// calculate Θ
+        let price_up=self.price(&params_up,payoff,exercise_rule)?;
+        let price_down=self.price(&params_down,payoff,exercise_rule)?;
+        Ok((price_up-price_down)/(2.0*h))
+    }
+
+    /// Calculate Θ <br>
     fn theta(
         &self,
         params:&CommonParams,
         payoff:&dyn Payoff,
         exercise_rule:&dyn ExerciseRule,
-    )->Result<f64>;
+    )->Result<f64>{Err(OptionError::NotImplemented("theta not implemented".to_string()))}
 
     /// calculate ρ
     fn rho(
@@ -59,12 +89,12 @@ pub trait GreeksEngine:PriceEngine{
         params:&CommonParams,
         payoff:&dyn Payoff,
         exercise_rule:&dyn ExerciseRule,
-    )->Result<f64>;
+    )->Result<f64>{Err(OptionError::NotImplemented("rho not implemented".to_string()))}
 }
 
 /// Monte Carlo engine specific interface <br>
 /// 蒙特卡洛引擎特有接口
-pub trait MonteCarloEngine:PriceEngine{
+pub trait MonteCarloEngineExt:PriceEngine{
     /// Set Random process <br>
     /// 设置随机过程
     fn set_process(&mut self,process:Box<dyn process::StochasticProcess>);
@@ -81,20 +111,21 @@ pub trait MonteCarloEngine:PriceEngine{
 
 /// Binomial engine specific interface <br>
 /// 二叉树引擎专属接口
-pub trait BinomialEngine:PriceEngine{
+pub trait BinomialEngineExt:PriceEngine{
     fn set_steps(&mut self,steps:usize)->Result<()>;
+    fn get_steps(&self)->usize;
 }
 
 /// PDE engine specific interface <br>
 /// PDE引擎专属接口
-pub trait PDEEngine:PriceEngine{
+pub trait PDEEngineExt:PriceEngine{
     fn set_grid_size(&mut self,x_steps:usize,t_steps:usize)->Result<()>;
     fn set_boundary_condition(&mut self,bc:Box<dyn BoundaryConditon>)->Result<()>;
 }
 
 /// PDE boundary condition interface
 /// PDE边界条件接口
-pub trait BoundaryConditon{
+pub trait BoundaryConditon:Debug{
     fn upper_boundary(&self,t:f64)->f64;
     fn lower_boundary(&self,t:f64)->f64;
     fn final_condition(&self,spot:f64)->f64;
