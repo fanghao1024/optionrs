@@ -140,8 +140,11 @@ pub trait PDEEngineExt:PriceEngine{
 /// PDE boundary condition interface
 /// PDE边界条件接口
 pub trait BoundaryConditon:Debug+Send+Sync{
+    /// 价格下界（S→0）的期权价值
     fn upper_boundary(&self,t:f64)->Result<f64>{return Err(OptionError::NotImplemented("BoundaryConditon:upper_boundary".to_string()));}
+    /// 价格上界（S→∞）的期权价值
     fn lower_boundary(&self,t:f64)->Result<f64>{return Err(OptionError::NotImplemented("BoundaryConditon:lower_boundary".to_string()));}
+    /// 终值条件（到期时T的期权价值）
     fn final_condition(&self,spot:f64)->Result<f64>{return Err(OptionError::NotImplemented("BoundaryConditon:final_condition".to_string()));}
     fn clone_box(&self) -> Box<dyn BoundaryConditon>;
 }

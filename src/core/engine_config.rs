@@ -1,7 +1,7 @@
 use std::any::Any;
 use std::sync::Arc;
 
-use crate::traits::engine::{GreeksEngine, PriceEngine};
+use crate::traits::engine::{GreeksEngine, PriceEngine,BoundaryConditon};
 use crate::params::common::CommonParams;
 use crate::traits::{payoff::Payoff, exercise::ExerciseRule};
 
@@ -54,7 +54,7 @@ impl EngineConfig{
     pub fn monte_carlo(num_simulations:usize,time_steps:usize)->Result<Self>{
         Ok(EngineConfig::MonteCarlo(Arc::new(MonteCarloEngine::new(num_simulations,time_steps)?)))
     }
-    pub fn pde(x_steps:usize,t_steps:usize)->Result<Self>{
-        Ok(EngineConfig::PDE(Arc::new(PDEEngine::new(x_steps,t_steps)?)))
+    pub fn pde(x_steps:usize,t_steps:usize,boundary_conditions:Arc<dyn BoundaryConditon>)->Result<Self>{
+        Ok(EngineConfig::PDE(Arc::new(PDEEngine::new(x_steps,t_steps,boundary_conditions)?)))
     }
 }

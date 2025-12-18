@@ -1,4 +1,5 @@
 use std::any::Any;
+use std::sync::Arc;
 use crate::errors::*;
 use crate::traits::engine::{PriceEngine,GreeksEngine,BoundaryConditon};
 use crate::params::common::CommonParams;
@@ -8,11 +9,24 @@ use crate::traits::{payoff::Payoff, exercise::ExerciseRule};
 pub struct PDEEngine{
     x_steps:usize,
     t_steps:usize,
-    boundary_conditions:Option<Box<dyn BoundaryConditon>>,
+    boundary_conditions:Arc<dyn BoundaryConditon>,
 }
 
 impl PDEEngine{
-
+    pub fn new(
+        x_steps:usize,
+        t_steps:usize,
+        boundary_conditions:Arc<dyn BoundaryConditon>,
+    ) -> Result<Self>{
+        if x_steps<50 || t_steps<50{
+            return Err(OptionError::InvalidParameter("The steps of PDE grids cannot be less than 50 steps".to_string()));
+        }
+        Ok(Self{
+            x_steps,
+            t_steps,
+            boundary_conditions,
+        })
+    }
 }
 
 impl PriceEngine for PDEEngine{
