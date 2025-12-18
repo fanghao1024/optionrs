@@ -5,10 +5,11 @@ use crate::traits::exercise::ExerciseRule;
 use crate::traits::payoff::Payoff;
 use std::any::Any;
 use std::fmt::Debug;
+use std::sync::Arc;
 
 /// The interface for pricing engine <br>
 /// 定价引擎接口
-pub trait PriceEngine{
+pub trait PriceEngine:Send+Sync{
     /// calculate option price <br>
     /// 计算期权价格
     fn price(
@@ -21,6 +22,18 @@ pub trait PriceEngine{
     /// 向下转型为Any
     fn as_any(&self) -> &dyn Any;
 }
+
+/// 解析解计算器插件Trait(核心：插件化的核心契约）
+pub trait AnalyticCalculator:Send+Sync{
+    fn supported_types(&self)->Vec<payoff::AnalyticPayoffType>;
+
+    /// 计算解析解价格（插件核心逻辑）
+    /// 参数：Payoff(含专属参数）+通用参数
+    fn calculate(&self, params:&CommonParams, payoff:&dyn Payoff)->Result<f64>;
+}
+
+/// 类型别名
+pub type AnalyticCalculatorRef = Arc<dyn AnalyticCalculator>;
 
 /// Engine interface supporting Greek letter calculation
 /// 支持希腊字母计算的引擎接口

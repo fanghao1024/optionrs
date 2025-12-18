@@ -5,7 +5,7 @@ use crate::traits::engine::{GreeksEngine, PriceEngine};
 use crate::params::common::CommonParams;
 use crate::traits::{payoff::Payoff, exercise::ExerciseRule};
 
-use super::analytic::AnalyticEngine;
+use super::analytics::AnalyticEngine;
 use super::monte_carlo::MonteCarloEngine;
 use super::binomial::BinomialEngine;
 use super::pde::PDEEngine;
@@ -41,5 +41,20 @@ impl PriceEngine for EngineConfig{
             EngineConfig::Binomial(engine)=>engine.as_any(),
             EngineConfig::PDE(engine)=>engine.as_any(),
         }
+    }
+}
+
+impl EngineConfig{
+    pub fn default_analytic()->Result<Self>{
+        Ok(EngineConfig::Analytic(Arc::new(AnalyticEngine::default())))
+    }
+    pub fn binomial(steps:usize)->Result<Self>{
+        Ok(EngineConfig::Binomial(Arc::new(BinomialEngine::new(steps)?)))
+    }
+    pub fn monte_carlo(num_simulations:usize,time_steps:usize)->Result<Self>{
+        Ok(EngineConfig::MonteCarlo(Arc::new(MonteCarloEngine::new(num_simulations,time_steps)?)))
+    }
+    pub fn pde(x_steps:usize,t_steps:usize)->Result<Self>{
+        Ok(EngineConfig::PDE(Arc::new(PDEEngine::new(x_steps,t_steps)?)))
     }
 }

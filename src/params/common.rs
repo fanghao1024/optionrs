@@ -19,22 +19,15 @@ impl CommonParams{
         dividend_yield:f64,
         time_to_maturity:f64,
     )->Result<Self>{
-        if spot<=0.0{
-            return Err(OptionError::InvalidParameter("The price of underlying assert must be greater than 0".to_string()));
-        }
-        if volatility<0.0{
-            return Err(OptionError::InvalidParameter("The volatility of underlying assert must be greater than 0".to_string()));
-        }
-        if time_to_maturity<0.0{
-            return Err(OptionError::InvalidParameter("The time to maturity of underlying assert must be greater than 0".to_string()));
-        }
-        Ok(Self{
+        let params=Self{
             spot,
             risk_free_rate,
             volatility,
             dividend_yield,
             time_to_maturity,
-        })
+        };
+        crate::utils::statistics::validate_common_params(&params)?;
+        Ok(params)
     }
 
     // Getter method
@@ -43,6 +36,9 @@ impl CommonParams{
     pub fn volatility(&self) -> f64{self.volatility}
     pub fn dividend_yield(&self) -> f64{self.dividend_yield}
     pub fn time_to_maturity(&self) -> f64{self.time_to_maturity}
+    pub fn all_params(&self)->(f64,f64,f64,f64,f64){
+        (self.spot,self.risk_free_rate,self.volatility,self.dividend_yield,self.time_to_maturity)
+    }
 
     /// Create a parameter copy of minor pertubations(for calculating Greek letters)<br>
     /// 创建微小扰动的参数副本（用于计算希腊字母）

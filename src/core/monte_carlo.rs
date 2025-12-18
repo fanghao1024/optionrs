@@ -17,7 +17,7 @@ pub struct MonteCarloEngine{
     use_antithetic:bool,           //是否启用对偶
 }
 
-impl MonteCarloEngine {
+impl MonteCarloEngine: {
     pub fn new(
         num_simulations: usize,
         time_steps: usize,

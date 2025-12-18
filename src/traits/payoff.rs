@@ -19,19 +19,11 @@ pub enum AnalyticPayoffType{
 
 }
 
-/// 解析解期权所需额外参数
-#[derive(Debug,Clone,Copy)]
-pub struct AnalyticPayoffParams{
-    strike: f64,                // 基础行权价
-    barrier: Option<f64>,       // 障碍价(障碍期权专用)
-    payout: f64,       // 赔付额(二元期权专用)
-    avg_period: Option<f64>,    // 平均周期
-}
 
 /// Define the interface for calculating option returns
 ///
 /// 定义期权收益计算接口
-pub trait Payoff{
+pub trait Payoff:Send+Sync{
     /// calculate option returns at a given assert price <br>
     /// 计算给定的资产价格下的期权收益
     /// ### parameter
@@ -48,11 +40,19 @@ pub trait Payoff{
         self.payoff(path.last().copied().unwrap_or(0.0))
     }
 
+    /// 向下转型为Any（用于类型识别）
     fn as_any(&self)->&dyn Any;
+
+    /// Obtain the type of parsing solution
+    /// (return **None** if there is no parsing solution) <br>
+    /// 获取解析解类型（无解析解则返回None)
+    fn analytic_type(&self)->Option<AnalyticPayoffType>{
+        None
+    }
 }
 
-/// Call option<br>
-/// 看涨期权
+/// Vanilla call option<br>
+/// 普通看涨期权
 #[derive(Debug,Clone,Copy)]
 pub struct CallPayoff{
     pub strike:f64,
@@ -65,10 +65,13 @@ impl Payoff for CallPayoff{
     fn as_any(&self) -> &dyn Any {
         self
     }
+    fn analytic_type(&self)->Option<AnalyticPayoffType>{
+        Some(AnalyticPayoffType::VanillaCall)
+    }
 }
 
-/// Put option <br>
-/// 看跌期权
+/// Vanilla put option <br>
+/// 普通看跌期权
 #[derive(Debug,Clone,Copy)]
 pub struct PutPayoff{
     pub strike:f64,
@@ -80,5 +83,50 @@ impl Payoff for PutPayoff{
     }
     fn as_any(&self) -> &dyn Any {
         self
+    }
+    fn analytic_type(&self)->Option<AnalyticPayoffType>{
+        Some(AnalyticPayoffType::VanillaPut)
+    }
+}
+
+/// Cash or nothing call option payoff <br>
+/// 现金或无看涨二元期权Payoff
+#[derive(Debug,Clone,Copy)]
+pub struct CashOrNothingCallPayoff{
+    pub strike:f64,
+    pub payout:f64, // 赔付额（二元期权专属）
+}
+
+impl Payoff for CashOrNothingCallPayoff{
+    fn payoff(&self,spot:f64)->f64{
+        if spot>=self.strike{self.payout} else {0.0}
+    }
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+    fn analytic_type(&self)->Option<AnalyticPayoffType>{
+        Some(AnalyticPayoffType::CashOrNothingCall)
+    }
+}
+
+/// 现金或无看跌期权
+
+/// Knock down the call barrier option payoff
+/// 向下敲出看涨障碍期权Payoff
+#[derive(Debug,Clone,Copy)]
+pub struct DownAndOutCallPayoff{
+    pub strike:f64,
+    pub barrier:f64,
+}
+
+impl Payoff for DownAndOutCallPayoff{
+    fn payoff(&self,spot:f64)->f64{
+        todo!()
+    }
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+    fn analytic_type(&self)->Option<AnalyticPayoffType>{
+        Some(AnalyticPayoffType::DownAndOutCall)
     }
 }
