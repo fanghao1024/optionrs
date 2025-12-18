@@ -8,4 +8,10 @@ pub mod params;
 pub mod traits;
 pub mod simulation;
 pub mod errors;
-mod utils;
+pub mod utils;
+
+pub use traits::exercise::{EuropeanExercise,ExerciseRule,AmericanExercise};
+pub use traits::engine::PriceEngine;
+pub use core::engine_config::EngineConfig;
+pub use core::analytic::engine::AnalyticEngine;
+pub use params::common::CommonParams;
