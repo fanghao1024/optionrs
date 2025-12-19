@@ -16,6 +16,9 @@ impl BinomialEngine {
         }
         Ok(Self{steps})
     }
+    pub fn with_steps(steps:usize)->Result<Self>{
+        Self::new(steps)
+    }
 }
 
 impl PriceEngine for BinomialEngine {
@@ -85,6 +88,7 @@ impl BinomialEngineExt for BinomialEngine {
     fn get_steps(&self)->usize{
         self.steps
     }
+    
 }
 
 impl GreeksEngine for BinomialEngine {}

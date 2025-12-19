@@ -10,6 +10,7 @@ use crate::params::common::CommonParams;
 use crate::simulation::brownian::GeometricBrownianMotion;
 use crate::errors::*;
 use rayon::prelude::*;
+use indicatif::{ProgressBar, ProgressStyle};
 
 /// Monte Carlo Engine
 #[derive(Debug,Clone)]
@@ -84,8 +85,10 @@ impl MonteCarloEngine {
         let mut master_rng=self.create_rng()?;
         let mut all_paths=Vec::with_capacity(self.num_simulations);
 
+        let pb:ProgressBar;
         if self.use_antithetic{
             let num_pairs=self.num_simulations/2;
+            pb=self.create_progress_bar(num_pairs as u64);
             for _ in 0..num_pairs{
                 let mut process=self.process
                     .as_ref()
@@ -95,6 +98,7 @@ impl MonteCarloEngine {
                 let (path1,path2)=process.simulate_antithetic_path(initial_price,time_horizon,self.time_steps)?;
                 all_paths.push(path1);
                 all_paths.push(path2);
+                pb.inc(1);
             }
             if self.num_simulations%2==1{
                 let mut process=self.process.as_ref().unwrap().clone_box();
@@ -103,13 +107,14 @@ impl MonteCarloEngine {
                 all_paths.push(path);
             }
         }else{
+            pb=self.create_progress_bar(self.num_simulations as u64);
             for _ in 0..self.num_simulations{
-                for _ in 0..self.num_simulations{
-                    let path=self.simulate_single_path(initial_price,time_horizon,&mut master_rng)?;
-                    all_paths.push(path);
-                }
+                let path=self.simulate_single_path(initial_price,time_horizon,&mut master_rng)?;
+                all_paths.push(path);
+                pb.inc(1);
             }
         }
+        pb.finish_with_message("Simulation finished");
         Ok(all_paths)
     }
 
@@ -120,34 +125,35 @@ impl MonteCarloEngine {
     )->Result<Vec<Vec<f64>>>{
         // 需要设置主种子来确保可复现
         let mut master_rng=StdRng::seed_from_u64(self.seed);
-
+        let num_seeds=if self.use_antithetic{self.num_simulations/2}else{self.num_simulations};
         // 预先生成所有子种子
         // 并行计算中不能共享同一个master_rng,所以先在主线程批量生成种子
-        let seeds:Vec<u64>=(0..self.num_simulations).map(|_| master_rng.next_u64()).collect();
-
-        if self.use_antithetic{
-            let num_pairs=self.num_simulations/2;
-            let pairs_seed=&seeds[0..num_pairs];
-
-            let results:Vec<Vec<Vec<f64>>>=pairs_seed.into_par_iter().map(|&seed|{
-                let mut process=self.process
-                    .as_ref()
-                    .expect("Process missing")
-                    .clone_box();
-                let (p1,p2)=process.simulate_antithetic_path(initial_price,time_horizon,self.time_steps).expect("Simulating antithet error");
-                vec![p1,p2]
-            }).collect();
-            Ok(results.into_iter().flatten().collect())
-        }else{
-            seeds.into_par_iter().map(|seed|{
-                let mut process=self.process
-                    .as_ref()
-                    .expect("Process missing")
-                    .clone_box();
-                process.init_rng_with_seed(seed);
-                process.simulate_path(initial_price,time_horizon,self.time_steps)
-            }).collect()
-        }
+        let seeds:Vec<u64>=(0..num_seeds).map(|_| master_rng.next_u64()).collect();
+        let pb=self.create_progress_bar(num_seeds as u64);
+        let paths=if self.use_antithetic{
+                let results:Vec<Vec<Vec<f64>>>=seeds.into_par_iter().map(|seed|{
+                    let mut process=self.process
+                        .as_ref()
+                        .expect("Process missing")
+                        .clone_box();
+                    let (p1,p2)=process.simulate_antithetic_path(initial_price,time_horizon,self.time_steps).expect("Simulating antithet error");
+                    pb.inc(1);
+                    vec![p1,p2]
+                }).collect();
+                Ok(results.into_iter().flatten().collect())
+            }else{
+                seeds.into_par_iter().map(|seed|{
+                    let mut process=self.process
+                        .as_ref()
+                        .expect("Process missing")
+                        .clone_box();
+                    process.init_rng_with_seed(seed);
+                    pb.inc(1);
+                    process.simulate_path(initial_price,time_horizon,self.time_steps)
+                }).collect()
+            };
+        pb.finish_with_message("Simulation finished");
+        paths
     }
 
     fn calculate_total_payoff_serial(
@@ -160,8 +166,12 @@ impl MonteCarloEngine {
         let mut total_payoff=0.0f64;
         let iters=if self.use_antithetic{self.num_simulations/2}else{self.num_simulations};
 
+        let pb=self.create_progress_bar(iters as u64);
+
         for _ in 0..iters{
             let mut process=self.process.as_ref().unwrap().clone_box();
+            process.init_rng_with_seed(rng.next_u64());
+
 
             if self.use_antithetic{
                 let (path1,path2)=process.simulate_antithetic_path(s0,t,self.time_steps)?;
@@ -170,7 +180,9 @@ impl MonteCarloEngine {
                 let path=process.simulate_path(s0,t,self.time_steps)?;
                 total_payoff+=payoff.path_dependent_payoff(&path);
             }
+            pb.inc(1);
         }
+        pb.finish_with_message("Simulation finished");
         Ok(total_payoff)
     }
 
@@ -184,12 +196,13 @@ impl MonteCarloEngine {
         let num_seeds=if self.use_antithetic{self.num_simulations/2}else{self.num_simulations};
         let seeds:Vec<u64>=(0..num_seeds).map(|_| master_rng.next_u64()).collect();
 
+        let pb=self.create_progress_bar(num_seeds as u64);
         // 使用rayon并行处理
         let total_payoff:f64=seeds.into_par_iter().map(|seed|{
             let mut process=self.process.as_ref().unwrap().clone_box();
             process.init_rng_with_seed(seed);
 
-            if self.use_antithetic{
+            let val=if self.use_antithetic{
                 process.simulate_antithetic_path(s0,t,self.time_steps)
                     .map(|(path1,path2)| payoff.path_dependent_payoff(&path1)+payoff.path_dependent_payoff(&path2))
                     .unwrap_or(0.0)
@@ -197,10 +210,22 @@ impl MonteCarloEngine {
                 process.simulate_path(s0,t,self.time_steps)
                     .map(|path| payoff.path_dependent_payoff(&path))
                     .unwrap_or(0.0)
-            }
+            };
+            pb.inc(1);
+            val
         }).sum();
+        pb.finish_with_message("Simulation finished");
         Ok(total_payoff)
 
+    }
+
+    fn create_progress_bar(&self,len:u64)->ProgressBar{
+        let pb=ProgressBar::new(len as u64);
+        pb.set_style(ProgressStyle::default_bar()
+            .template("{spinner:.green}[{elasped_precies}][{bar:40.cyan/blue}]{pos}/{len}({eta})")
+            .unwrap()
+            .progress_chars("#>-"));
+        pb
     }
 }
 

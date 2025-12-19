@@ -15,3 +15,4 @@ pub use traits::engine::PriceEngine;
 pub use core::engine_config::EngineConfig;
 pub use core::analytic::engine::AnalyticEngine;
 pub use params::common::CommonParams;
+pub use errors::*;

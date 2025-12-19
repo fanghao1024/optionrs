@@ -16,7 +16,7 @@ exclude = [".gitignore", "tests/benchmark/*", "docs/assets/*"]   # 排除无需�
 
 [dependencies]
 assert_approx_eq = "1.1.0"   # 进度条
-indicatif = "0.18.3"
+indicatif = { version = "0.18.3",features = ["rayon"]}
 owens-t = "0.1.5"              # 二元正态分布（奇异期权用）
 rand = "0.9.2"               # 随机数（蒙特卡洛模拟用）
 rand_distr = "0.5.1"         # 分布抽样

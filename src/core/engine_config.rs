@@ -51,8 +51,28 @@ impl EngineConfig{
     pub fn binomial(steps:usize)->Result<Self>{
         Ok(EngineConfig::Binomial(Arc::new(BinomialEngine::new(steps)?)))
     }
-    pub fn monte_carlo(num_simulations:usize,time_steps:usize)->Result<Self>{
-        Ok(EngineConfig::MonteCarlo(Arc::new(MonteCarloEngine::new(num_simulations,time_steps)?)))
+    pub fn monte_carlo(
+        num_simulations:usize,
+        time_steps:usize,
+        process: Option<Arc<dyn crate::traits::process::StochasticProcess>>,
+        use_antithetic:bool,
+        use_parallel:bool,
+        seed:u64)
+        ->Result<Self>{
+        Ok(
+            EngineConfig::MonteCarlo(
+                Arc::new(
+                    MonteCarloEngine::new(
+                        num_simulations,
+                        time_steps,
+                    process,
+                    use_antithetic,
+                    use_parallel,
+                    seed
+                    )?
+                )
+            )
+        )
     }
     pub fn pde(x_steps:usize,t_steps:usize,boundary_conditions:Arc<dyn BoundaryConditon>)->Result<Self>{
         Ok(EngineConfig::PDE(Arc::new(PDEEngine::new(x_steps,t_steps,boundary_conditions)?)))
