@@ -43,7 +43,14 @@ src/
 │   └── exotic.rs          # 其他奇异期权
 ├── core/                  # 引擎层：定价引擎实现
 │   ├── mod.rs
-│   ├── pde.rs             # PDE求解引擎
+│   ├── pde.rs             
+│   ├── pde/                     # PDE求解引擎
+│   │   ├── mod.rs               
+│   │   └── methods/
+│   │       ├── mod.rs
+│   │       ├── explicit.rs
+│   │       ├── implicit.rs
+│   │       └── crank_nicolson.rs
 │   ├── binomial.rs        # 二叉树引擎
 │   ├── monte_carlo.rs     # 蒙特卡洛引擎
 │   ├── analytic/           # 解析解引擎核心

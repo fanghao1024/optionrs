@@ -88,7 +88,11 @@ impl BinomialEngineExt for BinomialEngine {
     fn get_steps(&self)->usize{
         self.steps
     }
-    
+
 }
 
 impl GreeksEngine for BinomialEngine {}
+
+
+unsafe impl Send for BinomialEngine {}
+unsafe impl Sync for BinomialEngine {}

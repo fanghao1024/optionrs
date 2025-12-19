@@ -134,23 +134,55 @@ pub trait BinomialEngineExt:PriceEngine{
 /// PDE引擎专属接口
 pub trait PDEEngineExt:PriceEngine{
     fn set_grid_size(&mut self,x_steps:usize,t_steps:usize)->Result<()>;
-    fn set_boundary_condition(&mut self,bc:Box<dyn BoundaryConditon>)->Result<()>;
+    fn set_boundary_conditions(&mut self,bc:Box<dyn BoundaryCondition>);
+    fn with_new_grid_size(&self,x_steps:usize,t_steps:usize)->Result<Self>
+    where Self:Sized;
+    fn with_new_boundary_conditions(&self,bc:Arc<dyn BoundaryCondition>)->Result<Self>
+    where Self:Sized;
 }
 
+/// PDE方法接口，类似AnalyticCalculator
+pub trait PDEMethod:Debug+Send+Sync{
+    /// 执行单步反向迭代
+    ///
+    /// # parameter
+    /// - `grid_next`: 下一时间层的价值网络
+    /// - `grid_current': 当前时间层的价值网络（需要填充的）
+    /// - `s_min`: 价格下界
+    /// - `dx`: 价格步长
+    /// - `dt`: 时间步长
+    /// - `params`: 市场参数
+    /// - `payoff`: payoff函数
+    /// - `exercise_rule`: 行权规则
+    /// - `boundary_condition`: 边界条件
+    fn step_back(
+        &self,
+        grid_next: &[f64],
+        grid_current: &mut [f64],
+        s_min: f64,
+        dx: f64,
+        dt: f64,
+        params: &CommonParams,
+        payoff: &dyn Payoff,
+        exercise_rule: &dyn ExerciseRule,
+        boundary_condition: &dyn BoundaryCondition,
+        current_t: f64
+    )->Result<()>;
+}
 /// PDE boundary condition interface
 /// PDE边界条件接口
-pub trait BoundaryConditon:Debug+Send+Sync{
+pub trait BoundaryCondition:Debug+Send+Sync{
     /// 价格下界（S→0）的期权价值
     fn upper_boundary(&self,t:f64)->Result<f64>{return Err(OptionError::NotImplemented("BoundaryConditon:upper_boundary".to_string()));}
     /// 价格上界（S→∞）的期权价值
     fn lower_boundary(&self,t:f64)->Result<f64>{return Err(OptionError::NotImplemented("BoundaryConditon:lower_boundary".to_string()));}
     /// 终值条件（到期时T的期权价值）
     fn final_condition(&self,spot:f64)->Result<f64>{return Err(OptionError::NotImplemented("BoundaryConditon:final_condition".to_string()));}
-    fn clone_box(&self) -> Box<dyn BoundaryConditon>;
+    fn clone_box(&self) -> Box<dyn BoundaryCondition>;
 }
 
-impl Clone for Box<dyn BoundaryConditon> {
-    fn clone(&self) -> Box<dyn BoundaryConditon> {
+impl Clone for Box<dyn BoundaryCondition> {
+    fn clone(&self) -> Box<dyn BoundaryCondition> {
         self.clone_box()
     }
 }

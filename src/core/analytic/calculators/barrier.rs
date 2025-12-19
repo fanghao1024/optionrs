@@ -14,7 +14,7 @@ impl AnalyticCalculator for BarrierCalculator {
     }
 
     fn calculate(&self, params: &CommonParams, payoff: &dyn Payoff) -> Result<f64> {
-        let (s,r,q,sigma,t)=params.all_params();
+        let (s,r,sigma,q,t)=params.all_params();
 
         if t==0.0{
             return Ok(payoff.payoff(s));
