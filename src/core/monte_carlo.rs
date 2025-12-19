@@ -1,13 +1,16 @@
 //! The specific implementation of Monte Carlo Engine
 //! 蒙特卡洛引擎的具体实现
-use rand::{Rng, SeedableRng,rngs::StdRng};
+use rand::{Rng, SeedableRng, rngs::StdRng, RngCore};
 use std::any::Any;
 use std::sync::Arc;
-use crate::traits::engine::{PriceEngine,GreeksEngine,MonteCarloEngineExt};
+use rand_distr::StandardNormal;
+use crate::traits::engine::{PriceEngine, GreeksEngine, MonteCarloEngineExt};
 use crate::traits::{payoff::Payoff,exercise::ExerciseRule,process::StochasticProcess};
 use crate::params::common::CommonParams;
 use crate::simulation::brownian::GeometricBrownianMotion;
 use crate::errors::*;
+use rayon::prelude::*;
+
 /// Monte Carlo Engine
 #[derive(Debug,Clone)]
 pub struct MonteCarloEngine{
@@ -15,6 +18,7 @@ pub struct MonteCarloEngine{
     time_steps: usize,             //时间步数
     process: Option<Arc<dyn StochasticProcess>>, //随机过程
     use_antithetic:bool,           //是否启用对偶
+    use_parallel:bool,            //是否开启并行
     seed:u64,                   //随机数种子
 }
 
@@ -24,6 +28,7 @@ impl MonteCarloEngine {
         time_steps: usize,
         process: Option<Arc<dyn StochasticProcess>>,
         use_antithetic:bool,
+        use_parallel:bool,
         seed:u64
     ) -> Result<Self>{
         if num_simulations<1000{
@@ -32,22 +37,175 @@ impl MonteCarloEngine {
         if time_steps<1{
             return Err(OptionError::InvalidParameter("Time steps must be over 0".to_string()));
         }
+        let use_parallel = use_parallel && num_simulations>1000;
         Ok(Self{
             num_simulations,
             time_steps,
             process,
             use_antithetic,
+            use_parallel,
             seed,
         })
+    }
+
+    fn create_rng(&self) -> Result<StdRng> {
+        // 若要复现结果，用固定种子；否则用系统随机种子
+        if self.seed!=0{
+            Ok(StdRng::seed_from_u64(self.seed))
+        }else{
+            Ok(StdRng::from_os_rng())
+        }
     }
 
     pub fn set_antithetic(&mut self, use_antithetic:bool){
         self.use_antithetic = use_antithetic;
     }
+
+    fn simulate_single_path(
+        &self,
+        initial_price:f64,
+        time_horizon:f64,
+        rng:&mut StdRng
+    )->Result<Vec<f64>>{
+        let mut process=self.process
+            .as_ref()
+            .expect("Stochastic process must be initialized before simulation")
+            .clone_box();
+        // 为这个副本设置独立的种子，保证路径间的随机性
+        process.init_rng_with_seed(rng.next_u64());
+        process.simulate_path(initial_price, time_horizon,self.time_steps)
+    }
+
+    pub fn simulate_paths(
+        &self,
+        initial_price:f64,
+        time_horizon:f64,
+    )->Result<Vec<Vec<f64>>>{
+        let mut master_rng=self.create_rng()?;
+        let mut all_paths=Vec::with_capacity(self.num_simulations);
+
+        if self.use_antithetic{
+            let num_pairs=self.num_simulations/2;
+            for _ in 0..num_pairs{
+                let mut process=self.process
+                    .as_ref()
+                    .expect("Stochastic process must be initialized before simulation")
+                    .clone_box();
+                process.init_rng_with_seed(master_rng.next_u64());
+                let (path1,path2)=process.simulate_antithetic_path(initial_price,time_horizon,self.time_steps)?;
+                all_paths.push(path1);
+                all_paths.push(path2);
+            }
+            if self.num_simulations%2==1{
+                let mut process=self.process.as_ref().unwrap().clone_box();
+                process.init_rng_with_seed(master_rng.next_u64());
+                let path=process.simulate_path(initial_price,time_horizon,self.time_steps)?;
+                all_paths.push(path);
+            }
+        }else{
+            for _ in 0..self.num_simulations{
+                for _ in 0..self.num_simulations{
+                    let path=self.simulate_single_path(initial_price,time_horizon,&mut master_rng)?;
+                    all_paths.push(path);
+                }
+            }
+        }
+        Ok(all_paths)
+    }
+
+    pub fn simulate_paths_parallel(
+        &self,
+        initial_price:f64,
+        time_horizon:f64,
+    )->Result<Vec<Vec<f64>>>{
+        // 需要设置主种子来确保可复现
+        let mut master_rng=StdRng::seed_from_u64(self.seed);
+
+        // 预先生成所有子种子
+        // 并行计算中不能共享同一个master_rng,所以先在主线程批量生成种子
+        let seeds:Vec<u64>=(0..self.num_simulations).map(|_| master_rng.next_u64()).collect();
+
+        if self.use_antithetic{
+            let num_pairs=self.num_simulations/2;
+            let pairs_seed=&seeds[0..num_pairs];
+
+            let results:Vec<Vec<Vec<f64>>>=pairs_seed.into_par_iter().map(|&seed|{
+                let mut process=self.process
+                    .as_ref()
+                    .expect("Process missing")
+                    .clone_box();
+                let (p1,p2)=process.simulate_antithetic_path(initial_price,time_horizon,self.time_steps).expect("Simulating antithet error");
+                vec![p1,p2]
+            }).collect();
+            Ok(results.into_iter().flatten().collect())
+        }else{
+            seeds.into_par_iter().map(|seed|{
+                let mut process=self.process
+                    .as_ref()
+                    .expect("Process missing")
+                    .clone_box();
+                process.init_rng_with_seed(seed);
+                process.simulate_path(initial_price,time_horizon,self.time_steps)
+            }).collect()
+        }
+    }
+
+    fn calculate_total_payoff_serial(
+        &self,
+        s0:f64,
+        t:f64,
+        payoff:&dyn Payoff,
+    )->Result<f64>{
+        let mut rng=self.create_rng()?;
+        let mut total_payoff=0.0f64;
+        let iters=if self.use_antithetic{self.num_simulations/2}else{self.num_simulations};
+
+        for _ in 0..iters{
+            let mut process=self.process.as_ref().unwrap().clone_box();
+
+            if self.use_antithetic{
+                let (path1,path2)=process.simulate_antithetic_path(s0,t,self.time_steps)?;
+                total_payoff+=payoff.path_dependent_payoff(&path1)+payoff.path_dependent_payoff(&path2);
+            }else{
+                let path=process.simulate_path(s0,t,self.time_steps)?;
+                total_payoff+=payoff.path_dependent_payoff(&path);
+            }
+        }
+        Ok(total_payoff)
+    }
+
+    fn calculate_total_payoff_parallel(
+        &self,
+        s0:f64,
+        t:f64,
+        payoff:&dyn Payoff,
+    )->Result<f64>{
+        let mut master_rng=self.create_rng()?;
+        let num_seeds=if self.use_antithetic{self.num_simulations/2}else{self.num_simulations};
+        let seeds:Vec<u64>=(0..num_seeds).map(|_| master_rng.next_u64()).collect();
+
+        // 使用rayon并行处理
+        let total_payoff:f64=seeds.into_par_iter().map(|seed|{
+            let mut process=self.process.as_ref().unwrap().clone_box();
+            process.init_rng_with_seed(seed);
+
+            if self.use_antithetic{
+                process.simulate_antithetic_path(s0,t,self.time_steps)
+                    .map(|(path1,path2)| payoff.path_dependent_payoff(&path1)+payoff.path_dependent_payoff(&path2))
+                    .unwrap_or(0.0)
+            }else{
+                process.simulate_path(s0,t,self.time_steps)
+                    .map(|path| payoff.path_dependent_payoff(&path))
+                    .unwrap_or(0.0)
+            }
+        }).sum();
+        Ok(total_payoff)
+
+    }
 }
 
 impl MonteCarloEngineExt for MonteCarloEngine {
-    fn set_process(&mut self, process: Box<dyn StochasticProcess>) {
+    fn set_process(&mut self, process: Arc<dyn StochasticProcess>) {
         self.process=Some(process);
     }
 
@@ -68,14 +226,16 @@ impl MonteCarloEngineExt for MonteCarloEngine {
     }
 }
 
+
 impl PriceEngine for MonteCarloEngine {
     fn price(
         &self,
         params: &CommonParams,
         payoff: &dyn Payoff,
-        exercise_rule: &dyn ExerciseRule
+        _exercise_rule: &dyn ExerciseRule
     ) -> Result<f64> {
-        //let process=self.process.as_ref().ok_or(OptionError::NotSet("Specific stochastic process not set".to_string()))?;
+        // let mut process=self.process.as_ref().ok_or(OptionError::NotSet("Specific stochastic process not set".to_string()))?;
+        /*
         let mut process=match &self.process{
             Some(p) => p.clone_box(),
             None=>{
@@ -84,31 +244,23 @@ impl PriceEngine for MonteCarloEngine {
                 Box::new(gbm)
             }
         };
+        */
+        if self.process.is_none(){
+            return Err(OptionError::NotSet("Process not set".to_string()));
+        }
 
         let s0=params.spot();
         let t=params.time_to_maturity();
-        let r=params.risk_free_rate();
 
-        let discount_factor=(-r*t).exp();
-        let mut total_payoff=0.0;
-        let mut rng=self.rng.clone();
-        let effective_simulations=if self.use_antithetic{self.num_simulations/2}else{self.num_simulations};
+        let total_payoff=if self.use_parallel{
+            self.calculate_total_payoff_parallel(s0,t,payoff)?
+        }else{
+            self.calculate_total_payoff_serial(s0,t,payoff)?
+        };
 
-        for _ in 0..effective_simulations {
-            if self.use_antithetic {
-                let (path1,path2)=process.simulate_antithetic_path(s0,t,self.time_steps)?;
-                let payoff_value1=payoff.path_dependent_payoff(&path1);
-                let payoff_value2=payoff.path_dependent_payoff(&path2);
-                total_payoff+=payoff_value1;
-                total_payoff+=payoff_value2;
-            }else{
-                let path=process.simulate_path(s0,t,self.time_steps)?;
-                let payoff_value=payoff.path_dependent_payoff(&path);
-                total_payoff+=payoff_value;
-            }
-        }
-        let mean_payoff=total_payoff/self.num_simulations as f64;
-        Ok(mean_payoff*discount_factor)
+        let avg_payoff=total_payoff/self.num_simulations as f64;
+        let discount=(-params.risk_free_rate()*t).exp();
+        Ok(avg_payoff*discount)
     }
 
     fn as_any(&self) -> &dyn Any {

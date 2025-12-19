@@ -9,7 +9,7 @@ pub trait StochasticProcess:Debug+Send+Sync{
     fn clone_box(&self) -> Box<dyn StochasticProcess>;
     /// Initialize the random generator
     /// 初始化随机生成器
-    fn init_rng(&mut self,rng:impl Rng) where Self:Sized;
+    fn init_rng_with_seed(&mut self,seed:u64);
 
     /// Simulate the price for the next time step
     /// 模拟下一个时间步的价格
@@ -30,24 +30,7 @@ pub trait StochasticProcess:Debug+Send+Sync{
         time_horizon:f64,
         steps:usize
     )->Result<Vec<f64>>{
-        if initial_price<0.0 {
-            return Err(OptionError::InvalidParameter("Price cannot be negative".to_string()));
-        }
-        if time_horizon<0.9{
-            return Err(OptionError::InvalidParameter("Time horizon cannot be negative".to_string()));
-        }
-        if steps==0{
-            return Err(OptionError::InvalidParameter("Steps cannot be zero".to_string()));
-        }
-
-        let mut path=vec![initial_price];
-        let time_step=time_horizon/steps as f64;
-
-        for i in 1..=steps{
-            let next_price=self.next_step(path.last().copied().unwrap(),time_step)?;
-            path.push(next_price);
-        }
-        Ok(path)
+        Err(OptionError::NotImplemented("simulate_path not implemented".to_string()))
     }
 
     fn simulate_antithetic_path(

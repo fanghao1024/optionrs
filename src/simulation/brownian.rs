@@ -57,12 +57,8 @@ impl StochasticProcess for SimpleBrownianMotion{
         Box::new(self.clone())
     }
 
-    fn init_rng(&mut self, mut rng: impl Rng)
-    where
-        Self: Sized,
-    {
-        let seed:[u8;32]=rng.random();
-        self.rng = StdRng::from_seed(seed);
+    fn init_rng_with_seed(&mut self, seed: u64) {
+        self.rng = StdRng::seed_from_u64(seed);
     }
 
     fn next_step(&mut self,current_price:f64,time_step:f64)->Result<f64>{
@@ -169,12 +165,8 @@ impl StochasticProcess for GeometricBrownianMotion{
         Box::new(self.clone())
     }
 
-    fn init_rng(&mut self, mut rng: impl Rng)
-    where
-        Self: Sized,
-    {
-        let seed:[u8;32]=rng.random();
-        self.rng = StdRng::from_seed(seed);
+    fn init_rng_with_seed(&mut self, seed: u64) {
+        self.rng = StdRng::seed_from_u64(seed);
     }
     fn next_step(&mut self,current_price:f64,time_step:f64)->Result<f64>{
         if time_step<=0.0 || current_price<0.0{
@@ -233,6 +225,7 @@ impl StochasticProcess for GeometricBrownianMotion{
         if steps==0{
             return Err(OptionError::InvalidParameter("Steps must be positive".to_string()));
         }
+
         let mut path1=Vec::with_capacity(steps+1);
         let mut path2=Vec::with_capacity(steps+1);
         path1.push(initial_price);

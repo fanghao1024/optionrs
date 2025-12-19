@@ -111,7 +111,7 @@ pub trait GreeksEngine:PriceEngine{
 pub trait MonteCarloEngineExt:PriceEngine{
     /// Set Random process <br>
     /// 设置随机过程
-    fn set_process(&mut self,process:Box<dyn process::StochasticProcess>);
+    fn set_process(&mut self,process:Arc<dyn process::StochasticProcess>);
 
     /// Set simulation number <br>
     /// 设置模拟次数
