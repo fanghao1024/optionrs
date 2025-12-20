@@ -1,7 +1,6 @@
 //! PDE pricing engine
 
 use std::any::Any;
-use std::ops::Bound;
 use super::methods::{ ExplicitMethod, ImplicitMethod, CrankNicolsonMethod};
 use std::sync::Arc;
 use crate::traits::engine::{PriceEngine, PDEMethod, PDEEngineExt, BoundaryCondition};

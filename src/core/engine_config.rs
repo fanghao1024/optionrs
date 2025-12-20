@@ -9,7 +9,7 @@ use crate::traits::{payoff::Payoff, exercise::ExerciseRule};
 use super::analytic::AnalyticEngine;
 use super::monte_carlo::MonteCarloEngine;
 use super::binomial::BinomialEngine;
-use super::pde::PDEEngine;
+use super::pde::{PDEEngine,engine::FiniteDifferenceMethod};
 use crate::errors::*;
 
 #[derive(Debug,Clone)]
@@ -78,7 +78,7 @@ impl EngineConfig{
     pub fn pde(
         x_steps:usize,
         t_steps:usize,
-        method:crate::core::pde::engine::FiniteDifferenceMethod,
+        method:FiniteDifferenceMethod,
         use_log_space:bool,
         boundary_condition:Arc<dyn BoundaryCondition>
     )->Result<Self>{
@@ -90,7 +90,7 @@ impl EngineConfig{
                         t_steps,
                         method,
                         use_log_space,
-                        boundary_conditions,
+                        boundary_condition,
                     )?
                 )
             )

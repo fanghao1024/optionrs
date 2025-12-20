@@ -1,4 +1,4 @@
-pub mod european;
+pub mod european_call;
 pub mod american;
 mod barrier;
 mod lookback;

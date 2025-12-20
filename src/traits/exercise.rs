@@ -1,4 +1,5 @@
 use std::any::Any;
+use std::sync::Arc;
 /// define the interface for exercise rules
 /// 定义行权规则接口
 pub trait ExerciseRule:Send+Sync{
@@ -11,10 +12,10 @@ pub trait ExerciseRule:Send+Sync{
     /// + continuation_value: continue holding value 继续持有价值
     fn should_exercise(
         &self,
-        remaining_time:f64,
-        spot:f64,
-        intrinsic_value:f64,
-        continuation_value:f64
+        _remaining_time:f64,
+        _spot:f64,
+        _intrinsic_value:f64,
+        _continuation_value:f64
     ) ->bool{
         false
     }
@@ -22,6 +23,7 @@ pub trait ExerciseRule:Send+Sync{
     fn is_european(&self)->bool;
 
     fn as_any(&self)->&dyn Any;
+    
 }
 
 /// European exercise rule <br>
@@ -47,6 +49,7 @@ impl ExerciseRule for EuropeanExercise{
     fn as_any(&self)->&dyn Any{
         self
     }
+
 }
 
 /// American exercise rule <br>
@@ -71,4 +74,5 @@ impl ExerciseRule for AmericanExercise{
     fn as_any(&self)->&dyn Any{
         self
     }
+
 }
