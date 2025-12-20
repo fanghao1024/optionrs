@@ -1,5 +1,6 @@
 //! PDE pricing engine
 
+use std::any::Any;
 use std::ops::Bound;
 use super::methods::{FiniteDifferenceMethod, ExplicitMethod, ImplicitMethod, CrankNicolsonMethod};
 use std::sync::Arc;
@@ -51,14 +52,75 @@ impl PDEEngine{
         })
     }
 
-    fn calculate_price_impl(
-        &self,
-        params:&CommonParams,
-        payoff:&dyn Payoff,
-        exercise:&dyn ExerciseRule
-    )->Result<f64>{
-        let (s0,r,sigma,q,t_total)=params.all_params();
+}
 
+impl PriceEngine for PDEEngine{
+    fn price(&self, params: &CommonParams, payoff: &dyn Payoff, exercise_rule: &dyn ExerciseRule) -> Result<f64> {
+        let s0=params.spot();
+        let t_total=params.time_to_maturity();
+        let sigma=params.volatility();
+
+        let (s_min,s_max,s_current,to_price):(f64,f64,f64,fn(f64)->f64)=if self.use_log_space{
+
+            ((0.1*s0).ln(),(2.0*s0).ln(),s0.ln(),|s:f64|s.exp())
+        }else{
+
+            (0.1*s0,2.0*s0,s0,|s:f64| s)
+        };
+        let dx=(s_max-s_min)/self.x_step as f64;
+        let dt=t_total/self.t_step as f64;
+
+        // 稳定性检查（仅显式法需要）
+        // 显式有限差分法的稳定性通常由 CFL 条件（Courant-Friedrichs-Lewy Condition） 决定
+        if matches!(self.method,FiniteDifferenceMethod::Explicit){
+            let stability_factor=if self.use_log_space{
+                sigma.powi(2)*dt/dx.powi(2)
+            }else{
+                sigma.powi(2)*(2.0*s0).powi(2)*dt/dx.powi(2)
+            };
+            if stability_factor>0.5{
+                eprintln!("Warning: the explicit stability condition may \
+                not be met(it is recommended to increase the grid, maintain spatial accuracy \
+                and reduce time steps)");
+            }
+        }
+
+        // 初始化网格
+        let mut grid=vec![vec![0.0;self.x_step+1];self.t_step+1];
+
+        // 终值条件
+        for i in 0..self.x_step{
+            let s_space=s_min+i as f64 *dx;
+            let s=to_price(s_space);
+            grid[self.t_step][i]=payoff.payoff(s);
+        }
+
+        for n in (0..self.t_step).rev(){
+            let current_t=n as f64 * dt;
+            let remaining_time=t_total-current_t;
+
+            //边界条件
+            grid[n][0]=self.boundary_condition.lower_boundary(remaining_time)?;
+            grid[n][self.x_step]=self.boundary_condition.upper_boundary(remaining_time)?;
+
+            self.method_instance.step_back(
+                &grid[n+1],
+                &mut grid[n],
+                s_min,
+                dx,
+                dt,
+                params,
+                payoff,
+                exercise_rule,
+                current_t,
+                self.use_log_space
+            )?;
+        }
+
+        Ok(4.3)
+    }
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 

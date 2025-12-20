@@ -36,6 +36,7 @@ impl CommonParams{
     pub fn volatility(&self) -> f64{self.volatility}
     pub fn dividend_yield(&self) -> f64{self.dividend_yield}
     pub fn time_to_maturity(&self) -> f64{self.time_to_maturity}
+    /// spot, risk_free_rate, volatility, dividend_yield, time_to_maturity
     pub fn all_params(&self)->(f64,f64,f64,f64,f64){
         (self.spot,self.risk_free_rate,self.volatility,self.dividend_yield,self.time_to_maturity)
     }

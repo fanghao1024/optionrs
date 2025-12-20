@@ -154,7 +154,8 @@ pub trait PDEMethod:Debug+Send+Sync{
     /// - `params`: 市场参数
     /// - `payoff`: payoff函数
     /// - `exercise_rule`: 行权规则
-    /// - `boundary_condition`: 边界条件
+    /// - `current_t`: 当前时点
+    /// - `use_log_space`: 是否使用对数价格价格
     fn step_back(
         &self,
         grid_next: &[f64],
@@ -165,8 +166,8 @@ pub trait PDEMethod:Debug+Send+Sync{
         params: &CommonParams,
         payoff: &dyn Payoff,
         exercise_rule: &dyn ExerciseRule,
-        boundary_condition: &dyn BoundaryCondition,
-        current_t: f64
+        current_t: f64,
+        use_log_space: bool
     )->Result<()>;
 }
 /// PDE boundary condition interface

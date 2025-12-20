@@ -23,8 +23,8 @@ impl PDEMethod for ExplicitMethod{
         params: &CommonParams,
         payoff: &dyn Payoff,
         exercise_rule: &dyn ExerciseRule,
-        boundary_condition: &dyn BoundaryCondition,
-        current_t: f64
+        current_t: f64,
+        use_log_space:bool,
     ) -> crate::Result<()> {
         todo!()
     }
