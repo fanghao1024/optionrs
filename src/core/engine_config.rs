@@ -1,7 +1,8 @@
 use std::any::Any;
 use std::sync::Arc;
 
-use crate::traits::engine::{GreeksEngine, PriceEngine,BoundaryConditon};
+use crate::traits::engine::BoundaryCondition;
+use crate::traits::engine::{GreeksEngine, PriceEngine};
 use crate::params::common::CommonParams;
 use crate::traits::{payoff::Payoff, exercise::ExerciseRule};
 
@@ -74,7 +75,25 @@ impl EngineConfig{
             )
         )
     }
-    pub fn pde(x_steps:usize,t_steps:usize,boundary_conditions:Arc<dyn BoundaryConditon>)->Result<Self>{
-        Ok(EngineConfig::PDE(Arc::new(PDEEngine::new(x_steps,t_steps,boundary_conditions)?)))
+    pub fn pde(
+        x_steps:usize,
+        t_steps:usize,
+        method:crate::core::pde::engine::FiniteDifferenceMethod,
+        use_log_space:bool,
+        boundary_condition:Arc<dyn BoundaryCondition>
+    )->Result<Self>{
+        Ok(
+            EngineConfig::PDE(
+                Arc::new(
+                    PDEEngine::new(
+                        x_steps,
+                        t_steps,
+                        method,
+                        use_log_space,
+                        boundary_conditions,
+                    )?
+                )
+            )
+        )
     }
 }

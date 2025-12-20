@@ -76,14 +76,16 @@ pub fn linear_interpolate(x: f64, x_min: f64, dx: f64,grid: &[f64])->Result<f64>
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::errors::*;
     use assert_approx_eq::assert_approx_eq;
     #[test]
-    fn test_linear_interpolate_inside() {
+    fn test_linear_interpolate_inside() ->Result<()> {
         let grid = vec![10.0, 20.0, 30.0];
-        assert_approx_eq!(linear_interpolate(1.5, 1.0, 1.0, &grid), 15.0);
-        assert_approx_eq!(linear_interpolate(-1.0, 1.0, 1.0, &grid), 10.0);
-        assert_approx_eq!(linear_interpolate(5.0, 1.0, 1.0, &grid), 30.0);
-        assert_approx_eq!(linear_interpolate(2.0, 1.0, 1.0, &grid), 20.0);
+        assert_approx_eq!(linear_interpolate(1.5, 1.0, 1.0, &grid)?, 15.0);
+        assert_approx_eq!(linear_interpolate(-1.0, 1.0, 1.0, &grid)?, 10.0);
+        assert_approx_eq!(linear_interpolate(5.0, 1.0, 1.0, &grid)?, 30.0);
+        assert_approx_eq!(linear_interpolate(2.0, 1.0, 1.0, &grid)?, 20.0);
+        Ok(())
     }
 
 }

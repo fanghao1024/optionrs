@@ -146,8 +146,8 @@ pub trait PDEMethod:Debug+Send+Sync{
     /// 执行单步反向迭代
     ///
     /// # parameter
-    /// - `grid_next`: 下一时间层的价值网络
-    /// - `grid_current': 当前时间层的价值网络（需要填充的）
+    /// - `grid`: 价值网络
+    /// - `time_idx': 当前时间层索引
     /// - `s_min`: 价格下界
     /// - `dx`: 价格步长
     /// - `dt`: 时间步长
@@ -158,8 +158,8 @@ pub trait PDEMethod:Debug+Send+Sync{
     /// - `use_log_space`: 是否使用对数价格价格
     fn step_back(
         &self,
-        grid_next: &[f64],
-        grid_current: &mut [f64],
+        grid:&mut Vec<Vec<f64>>,
+        time_idx:usize,
         s_min: f64,
         dx: f64,
         dt: f64,
