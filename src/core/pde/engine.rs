@@ -9,6 +9,7 @@ use crate::traits::engine::{PriceEngine, PDEMethod, PDEEngineExt, BoundaryCondit
 use crate::params::common::CommonParams;
 use crate::errors::*;
 use crate::traits::{payoff::Payoff,exercise::ExerciseRule};
+use crate::utils::math::linear_interpolate;
 
 
 /// PDE引擎配置
@@ -117,11 +118,48 @@ impl PriceEngine for PDEEngine{
             )?;
         }
 
-        Ok(4.3)
+        let price=to_price(linear_interpolate(s_current,s_min,dx,&grid[0])?).max(0.0);
+        Ok(price)
     }
     fn as_any(&self) -> &dyn Any {
         self
     }
 }
 
+impl PDEEngineExt for PDEEngine{
+    fn set_grid_size(&mut self, x_steps: usize, t_steps: usize) -> Result<()> {
+        if x_steps<50 || t_steps<50{
+            return Err(OptionError::InvalidParameter("The steps of PDE grids cannot \
+            be less than 50 steps (recommeng ≥ 200)".to_string()));
+        }
+        self.x_step=x_steps;
+        self.t_step=t_steps;
+        Ok(())
+    }
 
+    fn set_boundary_conditions(&mut self, bc: Box<dyn BoundaryCondition>) {
+        self.boundary_condition=Arc::from(bc);
+    }
+
+    fn with_new_grid_size(&self, x_steps: usize, t_steps: usize) -> Result<Self>
+    where
+        Self: Sized,
+    {
+        let mut new=self.clone();
+        new.set_grid_size(x_steps, t_steps)?;
+        Ok(new)
+    }
+
+    fn with_new_boundary_conditions(&self, bc: Arc<dyn BoundaryCondition>) -> Result<Self>
+    where
+        Self: Sized,
+    {
+        let mut new=self.clone();
+        new.boundary_condition=bc;
+        Ok(new)
+    }
+}
+
+
+unsafe impl Send for PDEEngine{}
+unsafe impl Sync for PDEEngine{}
