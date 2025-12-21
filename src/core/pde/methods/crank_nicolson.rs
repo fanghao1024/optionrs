@@ -1,5 +1,5 @@
 use crate::errors::*;
-use crate::ExerciseRule;
+use crate::traits::exercise::ExerciseRule;
 use crate::traits::engine::{PriceEngine, PDEEngineExt, PDEMethod};
 use crate::params::common::CommonParams;
 use crate::traits::payoff::Payoff;
