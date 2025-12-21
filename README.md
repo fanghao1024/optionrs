@@ -156,7 +156,8 @@ fn main() ->Result<()>{
     // pde infinite differential method: Explicit
     let pde_engine=EngineConfig::pde(
         200,
-        600,FiniteDifferenceMethod::Explicit,
+        600,
+        FiniteDifferenceMethod::Explicit,
         true,
         european_call.boundary_condition()
     )?;
@@ -166,7 +167,8 @@ fn main() ->Result<()>{
     // pde infinite differential method: Implicit
     let pde_engine=EngineConfig::pde(
         200,
-        600,FiniteDifferenceMethod::Implicit,
+        600,
+        FiniteDifferenceMethod::Implicit,
         true,
         european_call.boundary_condition()
     )?;
@@ -176,7 +178,8 @@ fn main() ->Result<()>{
     // pde infinite differential method: Crank-Nicolson method
     let pde_engine=EngineConfig::pde(
         200,
-        600,FiniteDifferenceMethod::CrankNicolson,
+        600,
+        FiniteDifferenceMethod::CrankNicolson,
         true,
         european_call.boundary_condition()
     )?;
@@ -192,11 +195,13 @@ Add this to your `Cargo.toml`:
 ```toml
 [dependencies]
 assert_approx_eq = "1.1.0"
+indicatif = { version = "0.18.3",features = ["rayon"]}
 owens-t = "0.1.5"
 rand = "0.9.2"
 rand_distr = "0.5.1"
 rayon = "1.11.0"
 statrs = "0.18.0"
+thiserror = "2.0.17"
 ```
 ## Module Catalog
 ```Plain Text
