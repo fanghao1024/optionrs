@@ -206,55 +206,53 @@ thiserror = "2.0.17"
 ## Module Catalog
 ```Plain Text
 src/
-├── lib.rs             # 库入口，导出公共API
-├── errors.rs          # 错误处理机制
-├── products/          # 产品层：定义具体期权产品
+├── lib.rs             # Library entry point 库入口，导出公共API
+├── errors.rs          # Error handling mechanisms 错误处理机制
+├── products/          # Product layer: Defines specific option products 产品层：定义具体期权产品
 │   ├── mod.rs
-│   ├── european.rs        # 欧式期权
+│   ├── european_call.rs        # European call option欧式看涨期权
 │   ├── american.rs        # 美式期权
 │   ├── barrier.rs         # 障碍期权
 │   ├── lookback.rs        # 回望期权
 │   ├── spread.rs          # 价差期权
 │   └── exotic.rs          # 其他奇异期权
-├── core/              # 引擎层：定价引擎实现
+├── core/              # Engine layer: Pricing engine implementations 引擎层：定价引擎实现
 │   ├── mod.rs
 │   ├── pde.rs             
-│   ├── pde/                     # PDE求解引擎
-│   │   ├── mod.rs               
+│   ├── pde/                     # PDE solver engine PDE求解引擎
+│   │   ├── mod.rs
+│   │   ├── engine.rs               
 │   │   └── methods/
 │   │       ├── mod.rs
 │   │       ├── explicit.rs
 │   │       ├── implicit.rs
 │   │       └── crank_nicolson.rs
-│   ├── binomial.rs        # 二叉树引擎
-│   ├── monte_carlo.rs     # 蒙特卡洛引擎
-│   ├── analytic/           # 解析解引擎核心
+│   ├── binomial.rs        # Binomial tree engine 二叉树引擎
+│   ├── monte_carlo.rs     # Mento carlo engine 蒙特卡洛引擎
+│   ├── analytic/          # Analytic engine core 解析解引擎核心
 │   │   ├── mod.rs
-│   │   ├── engine.rs       # 插件化AnalyticEngine（计算器注册表）
-│   │   └── calculators/    # 各类解析解计算器（插件）
+│   │   ├── engine.rs       # Pluggable AnalyticEngine 插件化AnalyticEngine（计算器注册表）
+│   │   └── calculators/    # Analytic calculators 各类解析解计算器（插件）
 │   │       ├── mod.rs
 │   │       ├── vanilla.rs  # 普通期权计算器
 │   │       ├── binary.rs   # 二元期权计算器
 │   │       └── barrier.rs  # 障碍期权计算器
-│   └── engine_config.rs    # 所有引擎的统一入口枚举 
-├── params/             # 参数层：参数定义与验证
+│   └── engine_config.rs    # unified entry point enum for all engines 所有引擎的统一入口枚举 
+├── params/             # Paramters layer: Parameter definitions and validation 参数层：参数定义与验证
 │   ├── mod.rs
-│   ├── common.rs          # 通用参数
-│   ├── european.rs        # 欧式期权参数
-│   ├── american.rs        # 美式期权参数
-│   └── barrier.rs         # 障碍期权参数
-├── traits/            # 抽象接口层（仅定义Trait，无实现）
+│   └── common.rs          # Common parameters 通用参数
+├── traits/            # Abstraction Layer 抽象接口层
 │   ├── mod.rs
-│   ├── payoff.rs          # Payoff抽象+解析解类型枚举
-│   ├── exercise.rs        # 行权规则抽象 trait
-│   ├── process.rs         # 随机过程 trait
-│   └── engine.rs          # 定价引擎+解析解计算器插件Trait
+│   ├── payoff.rs          # Payoff abstraction + analytic solution type enums Payoff抽象+解析解类型枚举
+│   ├── exercise.rs        # Exercise rule abstruction traits 行权规则抽象 trait
+│   ├── process.rs         # Stochatic process trait 随机过程 trait
+│   └── engine.rs          # Pricing engines traits 定价引擎trait
 ├── utils/             # 工具层：数学工具
 │   ├── mod.rs
 │   ├── statistics.rs      # 正态分布CDF/PDF、参数校验
 │   ├── math.rs            # 数学工具函数
 │   └── linear_algebra.rs  # 线性代数工具（预留）
-└── simulation/         # 随机过程模拟
+└── simulation/         # Stochastic process simulation 随机过程模拟
     ├── mod.rs
     ├── browian.rs         # 布朗运动
     ├── time_series.rs     # 传统时序模型，garch等
