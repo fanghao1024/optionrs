@@ -10,10 +10,6 @@ pub mod simulation;
 pub mod errors;
 pub mod utils;
 
-pub use traits::exercise::{EuropeanExercise,ExerciseRule,AmericanExercise};
-
-
-
 pub mod prelude {
     pub use std::sync::Arc;
     pub use crate::traits::engine::PriceEngine;
@@ -24,4 +20,5 @@ pub mod prelude {
     pub use crate::traits::engine::pricing_trait;
     pub use crate::simulation::brownian::GeometricBrownianMotion;
     pub use crate::core::pde::engine::FiniteDifferenceMethod;
+    pub use crate::traits::exercise::{EuropeanExercise,ExerciseRule,AmericanExercise};
 }

@@ -24,8 +24,7 @@ fn test_bs_vs_binomial_convergence() {
 
  */
 
-use optionrs::*;
-use std::sync::Arc;
+use optionrs::prelude::*;
 #[test]
 fn test_vanilla_option_analytic() {
     // 1. 初始化参数：欧式看涨期权（S=100, K=100, r=5%, σ=20%, t=1年, q=0）
@@ -80,5 +79,5 @@ fn test_dynamic_register_calculator() {
     // 4. 重新注册普通期权计算器
     let vanilla_calc = Arc::new(optionrs::core::analytic::calculators::VanillaCalculator) as optionrs::traits::engine::AnalyticCalculatorRef;
     analytic_engine.register_calculator(vanilla_calc);
-    assert!(analytic_engine.get_calculator(traits::payoff::AnalyticPayoffType::VanillaPut).is_some());
+    assert!(analytic_engine.get_calculator(optionrs::traits::payoff::AnalyticPayoffType::VanillaPut).is_some());
 }
