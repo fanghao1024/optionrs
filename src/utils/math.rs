@@ -46,9 +46,9 @@ pub fn calc_percentage(data: &mut [f64], pct: f64) -> Result<f64> {
 /// ```rust
 /// use assert_approx_eq::assert_approx_eq;
 /// use optionrs::utils::math::linear_interpolate;
-/// 
+///
 /// let grid=vec![10.0,20.0,30.0];
-/// let y=linear_interpolate(1.5,1.0,1.0,&grid);
+/// let y=linear_interpolate(1.5,1.0,1.0,&grid)?;
 /// assert_approx_eq!(y,15.0);
 /// ```
 pub fn linear_interpolate(x: f64, x_min: f64, dx: f64,grid: &[f64])->Result<f64>{
