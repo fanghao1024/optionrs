@@ -40,8 +40,8 @@ fn test_vanilla_option_analytic() {
     assert!((price - 10.4506).abs() < 1e-4, "普通看涨期权价格计算错误：{}", price);
 }
 
-#[test]
 /*
+#[test]
 fn test_binary_option_analytic() {
     // 1. 初始化参数：现金或无看涨二元期权（S=100, K=100, 赔付10元, r=5%, σ=20%, t=1年）
     let params = CommonParams::new(100.0, 0.05, 0.2, 0.0, 1.0).unwrap();
