@@ -63,7 +63,7 @@ pub fn linear_interpolate(x: f64, x_min: f64, dx: f64,grid: &[f64])->Result<f64>
     if i_floor>=grid.len()-1{
         return Ok(grid[grid.len()-1]);
     }
-    if i_floor<0{
+    if i_float<0.0{
         return Ok(grid[0]);
     }
 
