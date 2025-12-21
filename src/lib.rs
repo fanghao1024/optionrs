@@ -11,8 +11,17 @@ pub mod errors;
 pub mod utils;
 
 pub use traits::exercise::{EuropeanExercise,ExerciseRule,AmericanExercise};
-pub use traits::engine::PriceEngine;
-pub use core::engine_config::EngineConfig;
-pub use core::analytic::engine::AnalyticEngine;
-pub use params::common::CommonParams;
-pub use errors::*;
+
+
+
+pub mod prelude {
+    pub use std::sync::Arc;
+    pub use crate::traits::engine::PriceEngine;
+    pub use crate::core::engine_config::EngineConfig;
+    pub use crate::params::common::CommonParams;
+    pub use crate::core::analytic::engine::AnalyticEngine;
+    pub use crate::errors::*;
+    pub use crate::traits::engine::pricing_trait;
+    pub use crate::simulation::brownian::GeometricBrownianMotion;
+    pub use crate::core::pde::engine::FiniteDifferenceMethod;
+}

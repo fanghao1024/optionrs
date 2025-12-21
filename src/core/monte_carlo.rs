@@ -253,7 +253,7 @@ impl MonteCarloEngineExt for MonteCarloEngine {
 
 
 impl PriceEngine for MonteCarloEngine {
-    fn price(
+    fn calculate_price(
         &self,
         params: &CommonParams,
         payoff: &dyn Payoff,

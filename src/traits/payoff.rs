@@ -57,7 +57,11 @@ pub trait Payoff:Send+Sync{
 pub struct CallPayoff{
     pub strike:f64,
 }
-
+impl CallPayoff {
+    pub fn new(strike:f64)->Self{
+        Self{strike}
+    }
+}
 impl Payoff for CallPayoff{
     fn payoff(&self,spot:f64)->f64{
         (spot-self.strike).max(0.0)

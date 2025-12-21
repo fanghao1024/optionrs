@@ -35,9 +35,9 @@ impl PDEMethod for CrankNicolsonMethod {
 
         let n=grid[time_idx].len();
 
-        let mut a=vec![0.0; n];
+        let mut a=vec![0.0; n-1];
         let mut b=vec![0.0; n];
-        let mut c=vec![0.0; n];
+        let mut c=vec![0.0; n-1];
         let mut rhs=vec![0.0; n];
 
         grid[time_idx][0]=grid[time_idx+1][0];

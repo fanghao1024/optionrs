@@ -22,7 +22,7 @@ impl BinomialEngine {
 }
 
 impl PriceEngine for BinomialEngine {
-    fn price(
+    fn calculate_price(
         &self,
         params: &CommonParams,
         payoff: &dyn Payoff,

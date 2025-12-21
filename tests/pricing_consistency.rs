@@ -37,7 +37,7 @@ fn test_vanilla_option_analytic() {
     let engine = EngineConfig::default_analytic().unwrap();
 
     // 3. 计算价格（理论值≈10.4506）
-    let price = engine.price(&params, &payoff, &exercise).unwrap();
+    let price = engine.calculate_price(&params, &payoff, &exercise).unwrap();
     assert!((price - 10.4506).abs() < 1e-4, "普通看涨期权价格计算错误：{}", price);
 }
 
@@ -50,7 +50,7 @@ fn test_binary_option_analytic() {
 
     // 2. 计算价格（理论值≈5.82）
     let engine = EngineConfig::default_analytic().unwrap();
-    let price = engine.price(&params, &payoff, &exercise).unwrap();
+    let price = engine.calculate_price(&params, &payoff, &exercise).unwrap();
     assert!((price - 5.82).abs() < 1e-2, "二元期权价格计算错误：{}", price);
 }
 
@@ -63,7 +63,7 @@ fn test_barrier_option_analytic() {
 
     // 2. 计算价格（理论值≈9.2）
     let engine = EngineConfig::default_analytic().unwrap();
-    let price = engine.price(&params, &payoff, &exercise).unwrap();
+    let price = engine.calculate_price(&params, &payoff, &exercise).unwrap();
     assert!((price - 9.2).abs() < 1e-1, "障碍期权价格计算错误：{}", price);
 }
 

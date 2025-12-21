@@ -21,17 +21,17 @@ pub enum EngineConfig{
 }
 
 impl PriceEngine for EngineConfig{
-    fn price(
+    fn calculate_price(
         &self,
         params: &CommonParams,
         payoff: &dyn Payoff,
         exercise_rule: &dyn ExerciseRule
     ) -> Result<f64> {
         match self{
-            EngineConfig::Analytic(engine) => {engine.price(params, payoff, exercise_rule)},
-            EngineConfig::Binomial(engine) => {engine.price(params, payoff, exercise_rule)},
-            EngineConfig::MonteCarlo(engine) => {engine.price(params, payoff, exercise_rule)},
-            EngineConfig::PDE(engine) => {engine.price(params, payoff, exercise_rule)},
+            EngineConfig::Analytic(engine) => {engine.calculate_price(params, payoff, exercise_rule)},
+            EngineConfig::Binomial(engine) => {engine.calculate_price(params, payoff, exercise_rule)},
+            EngineConfig::MonteCarlo(engine) => {engine.calculate_price(params, payoff, exercise_rule)},
+            EngineConfig::PDE(engine) => {engine.calculate_price(params, payoff, exercise_rule)},
         }
     }
 
@@ -80,7 +80,7 @@ impl EngineConfig{
         t_steps:usize,
         method:FiniteDifferenceMethod,
         use_log_space:bool,
-        boundary_condition:Arc<dyn BoundaryCondition>
+        boundary_condition:&Arc<dyn BoundaryCondition>
     )->Result<Self>{
         Ok(
             EngineConfig::PDE(
@@ -90,7 +90,7 @@ impl EngineConfig{
                         t_steps,
                         method,
                         use_log_space,
-                        boundary_condition,
+                        Arc::clone(boundary_condition),
                     )?
                 )
             )

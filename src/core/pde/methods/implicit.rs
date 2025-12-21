@@ -35,9 +35,9 @@ impl PDEMethod for ImplicitMethod {
         let n=grid[time_idx].len();
 
         // 构造三对角矩阵的系数
-        let mut a=vec![0.0; n];
+        let mut a=vec![0.0; n-1];
         let mut b=vec![0.0; n];
-        let mut c=vec![0.0; n];
+        let mut c=vec![0.0; n-1];
         let mut rhs=vec![0.0; n];
 
         // 边界条件直接从grid_next复制

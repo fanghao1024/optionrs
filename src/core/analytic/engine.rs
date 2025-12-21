@@ -56,7 +56,7 @@ impl AnalyticEngine {
 }
 
 impl PriceEngine for AnalyticEngine {
-    fn price(&self, params: &CommonParams, payoff: &dyn Payoff, exercise_rule: &dyn ExerciseRule) -> Result<f64> {
+    fn calculate_price(&self, params: &CommonParams, payoff: &dyn Payoff, exercise_rule: &dyn ExerciseRule) -> Result<f64> {
         // 解析解只支持欧式期权
         if !exercise_rule.is_european(){
             return Err(

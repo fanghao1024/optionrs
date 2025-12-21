@@ -31,6 +31,11 @@ pub trait ExerciseRule:Send+Sync{
 #[derive(Debug,Clone,Copy)]
 pub struct EuropeanExercise;
 
+impl EuropeanExercise{
+    pub fn new()->Self{
+        Self
+    }
+}
 impl ExerciseRule for EuropeanExercise{
     fn should_exercise(
         &self,

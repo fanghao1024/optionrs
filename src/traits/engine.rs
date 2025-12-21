@@ -1,5 +1,5 @@
 use crate::params::common::CommonParams;
-use crate::traits::{payoff,process,exercise};
+use crate::traits::{payoff,process};
 use crate::errors::*;
 use crate::traits::exercise::ExerciseRule;
 use crate::traits::payoff::Payoff;
@@ -12,12 +12,19 @@ use std::sync::Arc;
 pub trait PriceEngine:Send+Sync{
     /// calculate option price <br>
     /// 计算期权价格
-    fn price(
+    fn calculate_price(
         &self,
         params:&CommonParams,
         payoff:&dyn Payoff,
         exercise_rule:&dyn ExerciseRule,
     )->Result<f64>;
+
+    fn price(&self,product:&impl pricing_trait)->Result<f64>{
+        let common=product.common();
+        let payoff=product.payoff();
+        let exercise_rule=product.exercise_type();
+        self.calculate_price(common,payoff,exercise_rule)
+    }
 
     /// 向下转型为Any
     fn as_any(&self) -> &dyn Any;
@@ -49,8 +56,8 @@ pub trait GreeksEngine:PriceEngine{
         let params_up=params.with_spot(params.spot()+h)?;
         let params_down=params.with_spot(params.spot()-h)?;
 
-        let price_up=self.price(&params_up,payoff,exercise_rule)?;
-        let price_down=self.price(&params_down,payoff,exercise_rule)?;
+        let price_up=self.calculate_price(&params_up,payoff,exercise_rule)?;
+        let price_down=self.calculate_price(&params_down,payoff,exercise_rule)?;
         Ok((price_up-price_down)/(2.0*h))
     }
 
@@ -66,9 +73,9 @@ pub trait GreeksEngine:PriceEngine{
         let params_down=params.with_spot(params.spot()-h)?;
         let params_middle=params.clone();
 
-        let price_up=self.price(&params_up,payoff,exercise_rule)?;
-        let price_down=self.price(&params_down,payoff,exercise_rule)?;
-        let price_middle=self.price(&params_middle,payoff,exercise_rule)?;
+        let price_up=self.calculate_price(&params_up,payoff,exercise_rule)?;
+        let price_down=self.calculate_price(&params_down,payoff,exercise_rule)?;
+        let price_middle=self.calculate_price(&params_middle,payoff,exercise_rule)?;
 
         Ok((price_up-2.0*price_middle+price_down)/(h*h))
     }
@@ -84,8 +91,8 @@ pub trait GreeksEngine:PriceEngine{
         let params_up=params.with_volatility(params.volatility()+h)?;
         let params_down=params.with_volatility(params.volatility()-h)?;
 
-        let price_up=self.price(&params_up,payoff,exercise_rule)?;
-        let price_down=self.price(&params_down,payoff,exercise_rule)?;
+        let price_up=self.calculate_price(&params_up,payoff,exercise_rule)?;
+        let price_down=self.calculate_price(&params_down,payoff,exercise_rule)?;
         Ok((price_up-price_down)/(2.0*h))
     }
 
@@ -186,4 +193,11 @@ impl Clone for Box<dyn BoundaryCondition> {
     fn clone(&self) -> Box<dyn BoundaryCondition> {
         self.clone_box()
     }
+}
+
+pub trait pricing_trait{
+    fn common(&self)->&CommonParams;
+    fn payoff(&self)->&dyn Payoff;
+    fn exercise_type(&self)->&dyn ExerciseRule;
+    fn boundary_condition(&self)->&Arc<dyn BoundaryCondition>;
 }

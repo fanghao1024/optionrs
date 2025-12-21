@@ -61,7 +61,7 @@ impl PDEEngine{
 }
 
 impl PriceEngine for PDEEngine{
-    fn price(&self, params: &CommonParams, payoff: &dyn Payoff, exercise_rule: &dyn ExerciseRule) -> Result<f64> {
+    fn calculate_price(&self, params: &CommonParams, payoff: &dyn Payoff, exercise_rule: &dyn ExerciseRule) -> Result<f64> {
         let s0=params.spot();
         let t_total=params.time_to_maturity();
         let sigma=params.volatility();
