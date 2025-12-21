@@ -46,12 +46,28 @@ impl PriceEngine for EngineConfig{
 }
 
 impl EngineConfig{
-    pub fn default_analytic()->Result<Self>{
-        Ok(EngineConfig::Analytic(Arc::new(AnalyticEngine::default())))
+    pub fn analytic()->Result<Self>{
+        Ok(
+            EngineConfig::Analytic(
+                Arc::new(
+                    AnalyticEngine::default()
+                )
+            )
+        )
     }
-    pub fn binomial(steps:usize)->Result<Self>{
-        Ok(EngineConfig::Binomial(Arc::new(BinomialEngine::new(steps)?)))
+
+    pub fn binomial(
+        steps:usize
+    )->Result<Self>{
+        Ok(
+            EngineConfig::Binomial(
+                Arc::new(
+                    BinomialEngine::new(steps)?
+                )
+            )
+        )
     }
+
     pub fn monte_carlo(
         num_simulations:usize,
         time_steps:usize,
@@ -75,6 +91,7 @@ impl EngineConfig{
             )
         )
     }
+
     pub fn pde(
         x_steps:usize,
         t_steps:usize,

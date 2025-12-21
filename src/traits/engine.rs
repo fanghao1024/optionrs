@@ -99,17 +99,17 @@ pub trait GreeksEngine:PriceEngine{
     /// Calculate Θ <br>
     fn theta(
         &self,
-        params:&CommonParams,
-        payoff:&dyn Payoff,
-        exercise_rule:&dyn ExerciseRule,
+        _params:&CommonParams,
+        _payoff:&dyn Payoff,
+        _exercise_rule:&dyn ExerciseRule,
     )->Result<f64>{Err(OptionError::NotImplemented("theta not implemented".to_string()))}
 
     /// calculate ρ
     fn rho(
         &self,
-        params:&CommonParams,
-        payoff:&dyn Payoff,
-        exercise_rule:&dyn ExerciseRule,
+        _params:&CommonParams,
+        _payoff:&dyn Payoff,
+        _exercise_rule:&dyn ExerciseRule,
     )->Result<f64>{Err(OptionError::NotImplemented("rho not implemented".to_string()))}
 }
 
@@ -181,11 +181,11 @@ pub trait PDEMethod:Debug+Send+Sync{
 /// PDE边界条件接口
 pub trait BoundaryCondition:Debug+Send+Sync{
     /// 价格下界（S→0）的期权价值
-    fn upper_boundary(&self,t:f64)->Result<f64>{return Err(OptionError::NotImplemented("BoundaryConditon:upper_boundary".to_string()));}
+    fn upper_boundary(&self,_t:f64)->Result<f64>{return Err(OptionError::NotImplemented("BoundaryConditon:upper_boundary".to_string()));}
     /// 价格上界（S→∞）的期权价值
-    fn lower_boundary(&self,t:f64)->Result<f64>{return Err(OptionError::NotImplemented("BoundaryConditon:lower_boundary".to_string()));}
+    fn lower_boundary(&self,_t:f64)->Result<f64>{return Err(OptionError::NotImplemented("BoundaryConditon:lower_boundary".to_string()));}
     /// 终值条件（到期时T的期权价值）
-    fn final_condition(&self,spot:f64)->Result<f64>{return Err(OptionError::NotImplemented("BoundaryConditon:final_condition".to_string()));}
+    fn final_condition(&self,_spot:f64)->Result<f64>{return Err(OptionError::NotImplemented("BoundaryConditon:final_condition".to_string()));}
     fn clone_box(&self) -> Box<dyn BoundaryCondition>;
 }
 

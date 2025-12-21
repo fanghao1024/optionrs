@@ -124,7 +124,7 @@ pub struct DownAndOutCallPayoff{
 }
 
 impl Payoff for DownAndOutCallPayoff{
-    fn payoff(&self,spot:f64)->f64{
+    fn payoff(&self,_spot:f64)->f64{
         todo!()
     }
     fn as_any(&self) -> &dyn Any {

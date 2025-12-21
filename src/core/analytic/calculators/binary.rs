@@ -24,7 +24,7 @@ impl AnalyticCalculator for BinaryCalculator {
             return Ok(payoff.payoff(s));
         }
 
-        let (strike,payout,is_call)=match payoff.as_any().downcast_ref::<CashOrNothingCallPayoff>(){
+        let (strike,payout,_is_call)=match payoff.as_any().downcast_ref::<CashOrNothingCallPayoff>(){
             Some(binary_call)=>{
                 if binary_call.payout<0.0{
                     return Err(OptionError::InvalidParameter("The payout of binary call option must be greater than 0".to_string()));

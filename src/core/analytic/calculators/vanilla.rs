@@ -1,4 +1,3 @@
-use rand_distr::num_traits::Float;
 use crate::errors::OptionError;
 use crate::traits::engine::AnalyticCalculator;
 use crate::traits::payoff::{AnalyticPayoffType, CallPayoff, Payoff, PutPayoff};

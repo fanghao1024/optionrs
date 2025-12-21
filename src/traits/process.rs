@@ -25,18 +25,18 @@ pub trait StochasticProcess:Debug+Send+Sync{
     /// + steps: 步数
     fn simulate_path(
         &mut self,
-        initial_price:f64,
-        time_horizon:f64,
-        steps:usize
+        _initial_price:f64,
+        _time_horizon:f64,
+        _steps:usize
     )->Result<Vec<f64>>{
         Err(OptionError::NotImplemented("simulate_path not implemented".to_string()))
     }
 
     fn simulate_antithetic_path(
         &mut self,
-        initial_price:f64,
-        time_horizon:f64,
-        steps:usize,
+        _initial_price:f64,
+        _time_horizon:f64,
+        _steps:usize,
     )->Result<(Vec<f64>,Vec<f64>)>{Err(OptionError::NotImplemented("Simulate antithetic_path function not implemented".into()))}
 }
 

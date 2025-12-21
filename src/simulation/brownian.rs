@@ -87,7 +87,7 @@ impl StochasticProcess for SimpleBrownianMotion{
         let diffusion_term=self.volatility*dt.sqrt();
         let mut current_price=initial_price;
 
-        for i in 1..=steps{
+        for _ in 1..=steps{
             let epsilon:f64=self.rng.sample(StandardNormal);
             current_price+=drift_term+diffusion_term*epsilon;
             path.push(current_price);

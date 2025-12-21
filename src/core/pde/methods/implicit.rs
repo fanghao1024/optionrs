@@ -2,7 +2,7 @@ use crate::traits::engine::PDEMethod;
 use crate::errors::*;
 use crate::params::common::CommonParams;
 use crate::traits::{payoff::Payoff,exercise::ExerciseRule};
-use crate::utils::linear_algebra::ThomasSolver;
+use crate::utils::linear_algebra::thomas_solver;
 
 #[derive(Debug,Clone)]
 pub struct ImplicitMethod;
@@ -28,7 +28,7 @@ impl PDEMethod for ImplicitMethod {
         current_t: f64,             // 当前时间t
         use_log_space: bool         // 是否用对数空间S=e^x（避免S=0的数值问题）
     ) -> Result<()> {
-        let (s0,r,sigma,q,t_total)=params.all_params();
+        let (_,r,sigma,q,t_total)=params.all_params();
         let remaining_time=t_total-current_t;   // 剩余到期时间
         // 空间网格值转实际标的价格：对数空间则exp(x)，否则直接用x
         let to_price:fn(f64)->f64=if use_log_space { |s| s.exp() }else{|s| s};
@@ -76,7 +76,7 @@ impl PDEMethod for ImplicitMethod {
         }
         rhs[n-1]=grid[time_idx][n-1];
 
-        rhs=ThomasSolver(&a,&b,&c,&rhs)?;
+        rhs=thomas_solver(&a,&b,&c,&rhs)?;
 
         for i in 0..n{
             let s_space=s_min+i as f64*dx;

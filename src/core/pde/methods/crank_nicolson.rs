@@ -3,7 +3,7 @@ use crate::traits::exercise::ExerciseRule;
 use crate::traits::engine::{PDEMethod};
 use crate::params::common::CommonParams;
 use crate::traits::payoff::Payoff;
-use crate::utils::linear_algebra::ThomasSolver;
+use crate::utils::linear_algebra::thomas_solver;
 
 #[derive(Debug,Clone)]
 pub struct CrankNicolsonMethod;
@@ -29,7 +29,7 @@ impl PDEMethod for CrankNicolsonMethod {
         current_t: f64,
         use_log_space: bool
     ) -> Result<()> {
-        let (s0,r,sigma,q,t_total)=params.all_params();
+        let (_,r,sigma,q,t_total)=params.all_params();
         let remaining_time=t_total-current_t;
 
         let to_price:fn(f64)->f64 = if use_log_space {|s| s.exp()}else{|s| s};
@@ -75,7 +75,7 @@ impl PDEMethod for CrankNicolsonMethod {
         if n>1{a[n-2]=0.0;}
         rhs[n-1]=grid[time_idx][n-1];
 
-        rhs=ThomasSolver(&a,&b,&c,&rhs)?;
+        rhs=thomas_solver(&a,&b,&c,&rhs)?;
 
         for i in 0..n{
             let s_space=s_min+i as f64*dx;

@@ -11,7 +11,7 @@ impl AnalyticCalculator for BarrierCalculator {
     fn supported_types(&self) -> Vec<AnalyticPayoffType> {
         vec![AnalyticPayoffType::DownAndOutCall,AnalyticPayoffType::UpAndOutCall]
     }
-
+    #[allow(non_snake_case)]
     fn calculate(&self, params: &CommonParams, payoff: &dyn Payoff) -> Result<f64> {
         let (s,r,sigma,q,t)=params.all_params();
 
@@ -19,7 +19,7 @@ impl AnalyticCalculator for BarrierCalculator {
             return Ok(payoff.payoff(s));
         }
 
-        let (strike,barrier,is_call)=match payoff.as_any().downcast_ref::<DownAndOutCallPayoff>(){
+        let (strike,barrier,_is_call)=match payoff.as_any().downcast_ref::<DownAndOutCallPayoff>(){
             Some(down_and_out_call)=>{
                 if down_and_out_call.barrier<=0.0{
                     return Err(

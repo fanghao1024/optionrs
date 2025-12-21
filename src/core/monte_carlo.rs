@@ -134,6 +134,7 @@ impl MonteCarloEngine {
                         .as_ref()
                         .expect("Process missing")
                         .clone_box();
+                    process.init_rng_with_seed(seed);
                     let (p1,p2)=process.simulate_antithetic_path(initial_price,time_horizon,self.time_steps).expect("Simulating antithet error");
                     pb.inc(1);
                     vec![p1,p2]

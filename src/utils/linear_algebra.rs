@@ -1,7 +1,7 @@
 use crate::errors::*;
 
 /// Thomas算法求解器（求解三对角线性方程组）
-pub fn ThomasSolver(
+pub fn thomas_solver(
     a:&[f64],   // 下对角线(长度n-1)
     b:&[f64],   // 主对角线(长度n)
     c:&[f64],   // 上对角线(长度n-1)

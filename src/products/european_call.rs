@@ -37,7 +37,7 @@ impl EuropeanCall{
         validate_common_params(&common)?;
         let payoff=CallPayoff{strike:strike};
         let european_exercise=EuropeanExercise;
-        let boundary_condition=CallBoundaryCondition::new(strike,risk_free_rate,dividend_yield,volatility)?;
+        let boundary_condition=CallBoundaryCondition::new(strike,risk_free_rate,volatility)?;
 
         Ok(Self{
             common,
@@ -48,17 +48,6 @@ impl EuropeanCall{
         })
     }
 
-    pub fn common(&self)->&CommonParams{&self.common}
-
-    pub fn price_params(&self)->(
-        &CommonParams,
-        &CallPayoff,
-        &Arc<dyn ExerciseRule>,
-        &Arc<dyn BoundaryCondition>
-    )
-    {
-        (&self.common,&self.payoff,&self.exercise_type,&self.boundary_condition)
-    }
     pub fn condition(&self)->Result<(
         &CommonParams,
         impl Payoff,
@@ -69,15 +58,13 @@ impl EuropeanCall{
             &self.common,
             CallPayoff::new(self.strike),
             EuropeanExercise::new(),
-            CallBoundaryCondition::new(self.strike,self.common.risk_free_rate(),self.common.dividend_yield(),self.common.volatility())?
+            CallBoundaryCondition::new(self.strike,self.common.risk_free_rate(),self.common.volatility())?
         ))
     }
 }
 
 impl PricingTrait for EuropeanCall{
-    fn common(&self) -> &CommonParams {
-        &self.common
-    }
+    fn common(&self) -> &CommonParams { &self.common }
     fn payoff(&self)->&dyn Payoff{&self.payoff}
     fn exercise_type(&self)->&dyn ExerciseRule{(&self.exercise_type).as_ref()}
     fn boundary_condition(&self)->&Arc<dyn BoundaryCondition>{&self.boundary_condition}
@@ -87,7 +74,6 @@ impl PricingTrait for EuropeanCall{
 pub struct CallBoundaryCondition{
     strike:f64,
     risk_free_rate:f64,
-    dividend_yield:f64,
     volatility:f64,
 }
 
@@ -95,13 +81,12 @@ impl CallBoundaryCondition{
     pub fn new(
         strike:f64,
         risk_free_rate:f64,
-        dividend_yield:f64,
         volatility:f64,
     )->Result<Self>{
         if strike<0.0{
             return Err(OptionError::InvalidParameter("Strike cannot be negative".to_string()));
         }
-        Ok(Self{strike, risk_free_rate, dividend_yield,volatility})
+        Ok(Self{strike, risk_free_rate, volatility})
     }
 }
 
