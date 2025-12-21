@@ -206,9 +206,9 @@ thiserror = "2.0.17"
 ## Module Catalog
 ```Plain Text
 src/
-├── lib.rs                 # 库入口，导出公共API
-├── errors.rs              # 错误处理机制
-├── products/              # 产品层：定义具体期权产品
+├── lib.rs             # 库入口，导出公共API
+├── errors.rs          # 错误处理机制
+├── products/          # 产品层：定义具体期权产品
 │   ├── mod.rs
 │   ├── european.rs        # 欧式期权
 │   ├── american.rs        # 美式期权
@@ -216,7 +216,7 @@ src/
 │   ├── lookback.rs        # 回望期权
 │   ├── spread.rs          # 价差期权
 │   └── exotic.rs          # 其他奇异期权
-├── core/                  # 引擎层：定价引擎实现
+├── core/              # 引擎层：定价引擎实现
 │   ├── mod.rs
 │   ├── pde.rs             
 │   ├── pde/                     # PDE求解引擎
@@ -237,27 +237,27 @@ src/
 │   │       ├── binary.rs   # 二元期权计算器
 │   │       └── barrier.rs  # 障碍期权计算器
 │   └── engine_config.rs    # 所有引擎的统一入口枚举 
-├── params/                # 参数层：参数定义与验证
+├── params/             # 参数层：参数定义与验证
 │   ├── mod.rs
 │   ├── common.rs          # 通用参数
 │   ├── european.rs        # 欧式期权参数
 │   ├── american.rs        # 美式期权参数
 │   └── barrier.rs         # 障碍期权参数
-├── traits/                # 抽象接口层（仅定义Trait，无实现）
+├── traits/            # 抽象接口层（仅定义Trait，无实现）
 │   ├── mod.rs
 │   ├── payoff.rs          # Payoff抽象+解析解类型枚举
 │   ├── exercise.rs        # 行权规则抽象 trait
 │   ├── process.rs         # 随机过程 trait
 │   └── engine.rs          # 定价引擎+解析解计算器插件Trait
-├── utils/                 # 工具层：数学工具
+├── utils/             # 工具层：数学工具
 │   ├── mod.rs
 │   ├── statistics.rs      # 正态分布CDF/PDF、参数校验
 │   ├── math.rs            # 数学工具函数
 │   └── linear_algebra.rs  # 线性代数工具（预留）
-└── brownian/              # 随机过程模拟
+└── simulation/         # 随机过程模拟
     ├── mod.rs
-    ├── simple.rs          # 简单布朗运动
-    ├── geometric.rs       # 几何布朗运动
-    └── garch.rs           # GARCH 模型
+    ├── browian.rs         # 布朗运动
+    ├── time_series.rs     # 传统时序模型，garch等
+    └── stochastic_volatility.rs   # 随机波动率模型
 ```
 
