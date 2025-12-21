@@ -2,8 +2,7 @@ use crate::errors::*;
 use crate::params::common::CommonParams;
 use crate::traits::engine::AnalyticCalculator;
 use crate::traits::payoff::{AnalyticPayoffType, Payoff,DownAndOutCallPayoff};
-use crate::traits::payoff::AnalyticPayoffType::DownAndOutCall;
-use crate::utils::statistics::{calculate_d1_d2, norm_cdf};
+use crate::utils::statistics:: norm_cdf;
 
 #[derive(Debug,Clone)]
 pub struct BarrierCalculator;

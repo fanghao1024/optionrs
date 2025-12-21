@@ -1,7 +1,7 @@
 //! explicit 显式法
 use crate::traits::engine::PDEMethod;
 use crate::params::common::CommonParams;
-use crate::traits::{payoff::Payoff,exercise::ExerciseRule,engine::BoundaryCondition};
+use crate::traits::{payoff::Payoff,exercise::ExerciseRule};
 use crate::errors::*;
 
 #[derive(Debug,Clone)]
@@ -12,6 +12,7 @@ impl ExplicitMethod{
         Self
     }
 }
+
 
 impl PDEMethod for ExplicitMethod{
     fn step_back(
@@ -30,30 +31,27 @@ impl PDEMethod for ExplicitMethod{
         let (_,r,sigma,q,t_total)=params.all_params();
         let remain_time=t_total-current_t;
 
-        let (log_drift,log_diffusion)=if use_log_space {
-            (r-q+0.5*sigma.powi(2),0.5*sigma.powi(2))
-        }else{
-            (0.0, 0.0)
-        };
-
         let to_price:fn(f64)->f64=if use_log_space {|s:f64|s.exp()} else{|s:f64| s};
 
 
         // 循环内部点
         for i in 1..grid[time_idx].len()-1{
-            let s_space=s_min+i as f64*dt;
+            let s_space=s_min+i as f64*dx;
             let s=to_price(s_space);
 
-            let delta_x=(grid[time_idx+1][i+1]-grid[time_idx+1][i-1])/(2.0*dx);
-            let gamma_x=(grid[time_idx+1][i+1]-2.0*grid[time_idx+1][i]+grid[time_idx+1][i-1])/(dx*dx);
-
-            let value=if use_log_space{
-                let pde_term=r*grid[time_idx+1][i]-log_drift*delta_x-log_diffusion*gamma_x;
-                grid[time_idx+1][i]-pde_term*dt
+            let (drift,diffusion)=if use_log_space {
+                (r-q-0.5*sigma.powi(2),0.5*sigma.powi(2))
             }else{
-                let pde_term=r*grid[time_idx+1][i]-(r-q)*s*delta_x-0.5*sigma.powi(2)*s.powi(2) * gamma_x;
-                grid[time_idx+1][i]-pde_term*dt
+                ((r-q)*s, 0.5*sigma.powi(2)*s.powi(2))
             };
+
+            let a=diffusion*dt/dx.powi(2)-drift*dt/(2.0*dx);
+            let b=1.0-r*dt-2.0*diffusion*dt/dx.powi(2);
+            let c=diffusion*dt/dx.powi(2)+drift*dt/(2.0*dx);
+
+            let value=a*grid[time_idx+1][i-1]
+                +b*grid[time_idx+1][i]
+                +c*grid[time_idx+1][i+1];
 
             let intrinsic_value=payoff.payoff(s);
 
@@ -67,3 +65,7 @@ impl PDEMethod for ExplicitMethod{
         Ok(())
     }
 }
+
+
+
+

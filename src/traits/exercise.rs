@@ -1,5 +1,4 @@
 use std::any::Any;
-use std::sync::Arc;
 /// define the interface for exercise rules
 /// 定义行权规则接口
 pub trait ExerciseRule:Send+Sync{

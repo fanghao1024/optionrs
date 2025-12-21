@@ -35,8 +35,8 @@ pub trait Payoff:Send+Sync{
     /// 计算路径依赖期权的收益（默认实现为非路径依赖）
     /// - path: underlying path 标的资产路径
     fn path_dependent_payoff(&self,path:&[f64])->f64{
-        /// Calculate profits using the last price by default
-        /// 默认使用最后一个价格计算收益
+        // Calculate profits using the last price by default
+        // 默认使用最后一个价格计算收益
         self.payoff(path.last().copied().unwrap_or(0.0))
     }
 

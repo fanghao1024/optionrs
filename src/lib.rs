@@ -17,7 +17,7 @@ pub mod prelude {
     pub use crate::params::common::CommonParams;
     pub use crate::core::analytic::engine::AnalyticEngine;
     pub use crate::errors::*;
-    pub use crate::traits::engine::pricing_trait;
+    pub use crate::traits::engine::PricingTrait;
     pub use crate::simulation::brownian::GeometricBrownianMotion;
     pub use crate::core::pde::engine::FiniteDifferenceMethod;
     pub use crate::traits::exercise::{EuropeanExercise,ExerciseRule,AmericanExercise};

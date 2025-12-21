@@ -1,6 +1,6 @@
 use crate::errors::*;
 use crate::traits::exercise::ExerciseRule;
-use crate::traits::engine::{PriceEngine, PDEEngineExt, PDEMethod};
+use crate::traits::engine::{PDEMethod};
 use crate::params::common::CommonParams;
 use crate::traits::payoff::Payoff;
 use crate::utils::linear_algebra::ThomasSolver;
@@ -13,6 +13,7 @@ impl CrankNicolsonMethod {
         Self
     }
 }
+
 
 impl PDEMethod for CrankNicolsonMethod {
     fn step_back(
@@ -40,23 +41,23 @@ impl PDEMethod for CrankNicolsonMethod {
         let mut c=vec![0.0; n-1];
         let mut rhs=vec![0.0; n];
 
-        grid[time_idx][0]=grid[time_idx+1][0];
-        grid[time_idx][n-1]=grid[time_idx+1][n-1];
+        b[0]=1.0;
+        if n>1{c[0]=0.0;}
+        rhs[0]=grid[time_idx][0];
+
 
         for i in 1..n-1{
             let s_space=s_min+i as f64*dx;
             let s=to_price(s_space);
 
             let alpha=if use_log_space{
-                let log_diffusion=0.5*sigma.powi(2);
-                log_diffusion*dt/(dx*dx)
+                0.5*sigma.powi(2)*dt/(dx*dx)
             }else{
                 0.5*sigma.powi(2)*s.powi(2)*dt/(dx*dx)
             };
 
             let beta = if use_log_space{
-                let log_drift=r-q+0.5*sigma.powi(2);
-                log_drift*dt/(2.0*dx)
+                (r-q-0.5*sigma.powi(2))*dt/(2.0*dx)
             }else{
                 (r-q)*s*dt/(2.0*dx)
             };
@@ -66,41 +67,32 @@ impl PDEMethod for CrankNicolsonMethod {
             c[i]=-0.5*alpha-0.5*beta;  // 上对角线
 
             rhs[i]=-a[i]*grid[time_idx+1][i-1]
-            +(2.0-b[i])*grid[time_idx+1][i]
+            +(1.0-alpha-0.5*r*dt)*grid[time_idx+1][i]
             -c[i]*grid[time_idx+1][i+1];
         }
-        // 边界条件处理
-        let alpha_0=if use_log_space{
-            0.5*sigma.powi(2)*dt/(dx*dx)
-        }else{
-            0.5*sigma.powi(2)*(0.1*s0).powi(2)*dt/(dx*dx)
-        };
 
-        let alpha_n=if use_log_space{
-            0.5*sigma.powi(2)*dt/(dx*dx)
-        }else{
-            0.5*sigma.powi(2)*(2.0*s0).powi(2)*dt/(dx*dx)
-        };
-
-        // 边界条件调整
-        rhs[0]=(1.0-alpha_0-0.5*r*dt)*grid[time_idx+1][0];
-        rhs[n-1]=(1.0-alpha_n-0.5*r*dt)*grid[time_idx+1][n-1];
-        b[0]=1.0+alpha_0+0.5*r*dt;
-        b[n-1]=1.0+alpha_n+0.5*r*dt;
+        b[n-1]=1.0;
+        if n>1{a[n-2]=0.0;}
+        rhs[n-1]=grid[time_idx][n-1];
 
         rhs=ThomasSolver(&a,&b,&c,&rhs)?;
 
-        for i in 1..n-1{
+        for i in 0..n{
             let s_space=s_min+i as f64*dx;
             let s=to_price(s_space);
             let intrinsic_value=payoff.payoff(s);
 
-            grid[time_idx][i]=if exercise_rule.should_exercise(remaining_time,s,intrinsic_value,rhs[i]){
-                intrinsic_value
+            if i>0 && i<n-1{
+                grid[time_idx][i]=if exercise_rule.should_exercise(remaining_time,s,intrinsic_value,rhs[i]){
+                    intrinsic_value
+                }else{
+                    rhs[i]
+                };
             }else{
-                rhs[i]
-            };
+                grid[time_idx][i]=rhs[i];
+            }
         }
         Ok(())
     }
 }
+

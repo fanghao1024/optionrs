@@ -143,7 +143,7 @@ impl GeometricBrownianMotion{
         self.rng = StdRng::seed_from_u64(seed);
     }
 
-    fn next_antithetic_step(&self,current_price:f64,time_step:f64,epsilon:f64)->Result<f64>{
+    pub fn next_antithetic_step(&self,current_price:f64,time_step:f64,epsilon:f64)->Result<f64>{
         if time_step<0.0{
             return Err(OptionError::InvalidParameter("TimeStep must be 0 or positive".to_string()));
         }
@@ -154,7 +154,7 @@ impl GeometricBrownianMotion{
         let sqrt_dt=dt.sqrt();
         let anti_epsilon=-epsilon;
         let drift_term=(self.drift-0.5*self.volatility.powi(2))*dt;
-        let diffusion_term=self.volatility*anti_epsilon*dt.sqrt();
+        let diffusion_term=self.volatility*anti_epsilon*sqrt_dt;
         Ok(current_price*(drift_term+diffusion_term).exp())
 
     }
@@ -169,8 +169,11 @@ impl StochasticProcess for GeometricBrownianMotion{
         self.rng = StdRng::seed_from_u64(seed);
     }
     fn next_step(&mut self,current_price:f64,time_step:f64)->Result<f64>{
-        if time_step<=0.0 || current_price<0.0{
-            return Ok(current_price);
+        if time_step < 0.0 {
+            return Err(OptionError::InvalidParameter("Time step must be non-negative".into()));
+        }
+        if current_price <= 0.0 {
+            return Err(OptionError::InvalidParameter("Current price must be positive".into()));
         }
         let epsilon:f64=self.rng.sample(StandardNormal);
         let dt=time_step;
@@ -186,7 +189,7 @@ impl StochasticProcess for GeometricBrownianMotion{
         steps: usize
     ) -> Result<Vec<f64>> {
         if initial_price<=0.0{
-            return Err(OptionError::InvalidParameter("Initial price must be 0 or positive".to_string()));
+            return Err(OptionError::InvalidParameter("Initial price must be positive".to_string()));
         }
         if time_horizon<0.0{
             return Err(OptionError::InvalidParameter("Time horizon must be 0 or positive".to_string()));
@@ -198,7 +201,7 @@ impl StochasticProcess for GeometricBrownianMotion{
         let mut path=Vec::with_capacity(steps+1);
         path.push(initial_price);
         let dt=time_horizon/steps as f64;
-        let drift_term=self.drift*dt;
+        let drift_term=(self.drift-0.5*self.volatility.powi(2))*dt;
         let diffusion_term=self.volatility*dt.sqrt();
         let mut log_s=initial_price.ln();
 
@@ -231,7 +234,7 @@ impl StochasticProcess for GeometricBrownianMotion{
         path1.push(initial_price);
         path2.push(initial_price);
         let dt=time_horizon/steps as f64;
-        let drift_term=self.drift*dt;
+        let drift_term=(self.drift-0.5*self.volatility.powi(2))*dt;
         let diffusion_term=self.volatility*dt.sqrt();
         let mut log_s1=initial_price.ln();
         let mut log_s2=initial_price.ln();
@@ -287,7 +290,7 @@ mod tests{
         gbm.reset_rng(43);
 
         let mut final_price=Vec::with_capacity(100000);
-        for _ in 0..1000{
+        for _ in 0..100000{
             let path=gbm.simulate_path(100.0,1.0,252)?;
             final_price.push(*path.last().unwrap());
         }

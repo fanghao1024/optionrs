@@ -1,13 +1,11 @@
 //! The specific implementation of Monte Carlo Engine
 //! 蒙特卡洛引擎的具体实现
-use rand::{Rng, SeedableRng, rngs::StdRng, RngCore};
+use rand::{SeedableRng, rngs::StdRng, RngCore};
 use std::any::Any;
 use std::sync::Arc;
-use rand_distr::StandardNormal;
 use crate::traits::engine::{PriceEngine, GreeksEngine, MonteCarloEngineExt};
 use crate::traits::{payoff::Payoff,exercise::ExerciseRule,process::StochasticProcess};
 use crate::params::common::CommonParams;
-use crate::simulation::brownian::GeometricBrownianMotion;
 use crate::errors::*;
 use rayon::prelude::*;
 use indicatif::{ProgressBar, ProgressStyle};
@@ -259,17 +257,7 @@ impl PriceEngine for MonteCarloEngine {
         payoff: &dyn Payoff,
         _exercise_rule: &dyn ExerciseRule
     ) -> Result<f64> {
-        // let mut process=self.process.as_ref().ok_or(OptionError::NotSet("Specific stochastic process not set".to_string()))?;
-        /*
-        let mut process=match &self.process{
-            Some(p) => p.clone_box(),
-            None=>{
-                let drift=params.risk_free_rate()-params.dividend_yield();
-                let gbm=GeometricBrownianMotion::new(drift,params.volatility())?;
-                Box::new(gbm)
-            }
-        };
-        */
+
         if self.process.is_none(){
             return Err(OptionError::NotSet("Process not set".to_string()));
         }

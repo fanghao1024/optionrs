@@ -100,7 +100,7 @@ impl PriceEngine for PDEEngine{
         let mut grid=vec![vec![0.0;self.x_steps+1];self.t_steps+1];
 
         // 终值条件
-        for i in 0..self.x_steps{
+        for i in 0..=self.x_steps{
             let s_space=s_min+i as f64 *dx;
             let s=to_price(s_space);
             grid[self.t_steps][i]=payoff.payoff(s);
@@ -128,7 +128,7 @@ impl PriceEngine for PDEEngine{
             )?;
         }
 
-        let price=to_price(linear_interpolate(s_current,s_min,dx,&grid[0])?).max(0.0);
+        let price=linear_interpolate(s_current,s_min,dx,&grid[0])?.max(0.0);
         Ok(price)
     }
     fn as_any(&self) -> &dyn Any {

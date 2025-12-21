@@ -58,18 +58,18 @@ impl EngineConfig{
         process: Option<Arc<dyn crate::traits::process::StochasticProcess>>,
         use_antithetic:bool,
         use_parallel:bool,
-        seed:u64)
-        ->Result<Self>{
+        seed:u64
+    ) ->Result<Self>{
         Ok(
             EngineConfig::MonteCarlo(
                 Arc::new(
                     MonteCarloEngine::new(
                         num_simulations,
                         time_steps,
-                    process,
-                    use_antithetic,
-                    use_parallel,
-                    seed
+                        process,
+                        use_antithetic,
+                        use_parallel,
+                        seed
                     )?
                 )
             )

@@ -1,4 +1,3 @@
-use crate::core::binomial::BinomialEngine;
 use crate::errors::*;
 
 /// Thomas算法求解器（求解三对角线性方程组）
@@ -12,16 +11,23 @@ pub fn ThomasSolver(
     if n==0{
         return Ok(vec![]);
     }
-
     if b.len()!=n || a.len()!=n-1 ||c.len()!=n-1 {
-        return Err(OptionError::InvalidParameter("Thamos angorithm: \n \
+        return Err(OptionError::InvalidParameter("Thamos algorithm: \n \
         the input dim of array not match".to_string()));
     }
-
+    if n==1{
+        if b[0].abs()<1e-12{
+            return Err(OptionError::CalculationError("Matrix is singular".to_string()));
+        }
+        return Ok(vec![d[0]/b[0]]);
+    }
     // 前向消元
     let mut c_prime=vec![0.0;n];
     let mut d_prime=vec![0.0;n];
 
+    if b[0].abs()<1e-12{
+        return Err(OptionError::CalculationError("Matrix is singular".to_string()));
+    }
     c_prime[0]=c[0]/b[0];
     d_prime[0]=d[0]/b[0];
 

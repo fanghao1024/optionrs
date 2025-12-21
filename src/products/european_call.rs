@@ -1,14 +1,10 @@
-use std::any::Any;
 use std::sync::Arc;
-use crate::core::monte_carlo::MonteCarloEngine;
-use crate::simulation::brownian::GeometricBrownianMotion;
 use crate::params::common::CommonParams;
 use crate::errors::*;
 use crate::utils::statistics::validate_common_params;
-use crate::core::engine_config::EngineConfig;
 use crate::traits::payoff::{CallPayoff,Payoff};
 use crate::traits::exercise::{EuropeanExercise,ExerciseRule};
-use crate::traits::engine::{BoundaryCondition,pricing_trait};
+use crate::traits::engine::{BoundaryCondition,PricingTrait};
 
 
 
@@ -41,7 +37,7 @@ impl EuropeanCall{
         validate_common_params(&common)?;
         let payoff=CallPayoff{strike:strike};
         let european_exercise=EuropeanExercise;
-        let boundary_condition=CallBoundaryCondition::new(strike,risk_free_rate,dividend_yield)?;
+        let boundary_condition=CallBoundaryCondition::new(strike,risk_free_rate,dividend_yield,volatility)?;
 
         Ok(Self{
             common,
@@ -73,12 +69,12 @@ impl EuropeanCall{
             &self.common,
             CallPayoff::new(self.strike),
             EuropeanExercise::new(),
-            CallBoundaryCondition::new(self.strike,self.common.risk_free_rate(),self.common.dividend_yield())?
+            CallBoundaryCondition::new(self.strike,self.common.risk_free_rate(),self.common.dividend_yield(),self.common.volatility())?
         ))
     }
 }
 
-impl pricing_trait for EuropeanCall{
+impl PricingTrait for EuropeanCall{
     fn common(&self) -> &CommonParams {
         &self.common
     }
@@ -92,6 +88,7 @@ pub struct CallBoundaryCondition{
     strike:f64,
     risk_free_rate:f64,
     dividend_yield:f64,
+    volatility:f64,
 }
 
 impl CallBoundaryCondition{
@@ -99,11 +96,12 @@ impl CallBoundaryCondition{
         strike:f64,
         risk_free_rate:f64,
         dividend_yield:f64,
+        volatility:f64,
     )->Result<Self>{
         if strike<0.0{
             return Err(OptionError::InvalidParameter("Strike cannot be negative".to_string()));
         }
-        Ok(Self{strike, risk_free_rate, dividend_yield})
+        Ok(Self{strike, risk_free_rate, dividend_yield,volatility})
     }
 }
 
@@ -120,7 +118,10 @@ impl BoundaryCondition for CallBoundaryCondition{
         // 基于波动率动态设置：S_max = K * exp(κ * σ * sqrt(T))
         // κ通常取3-5，覆盖99.9%以上的概率质量
         let discount_factor=(-self.risk_free_rate*t).exp();
-        Ok(2.0*self.strike-self.strike*discount_factor)
+        //Ok(2.0*self.strike-self.strike*discount_factor)
+        let k=4.0;
+        let s_max=self.strike*(k*self.volatility*t.sqrt()).exp();
+        Ok(s_max-self.strike*discount_factor)
     }
 
     fn final_condition(&self, spot: f64) -> Result<f64> {

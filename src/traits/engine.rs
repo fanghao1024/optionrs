@@ -19,7 +19,7 @@ pub trait PriceEngine:Send+Sync{
         exercise_rule:&dyn ExerciseRule,
     )->Result<f64>;
 
-    fn price(&self,product:&impl pricing_trait)->Result<f64>{
+    fn price(&self,product:&impl PricingTrait)->Result<f64>{
         let common=product.common();
         let payoff=product.payoff();
         let exercise_rule=product.exercise_type();
@@ -195,7 +195,7 @@ impl Clone for Box<dyn BoundaryCondition> {
     }
 }
 
-pub trait pricing_trait{
+pub trait PricingTrait{
     fn common(&self)->&CommonParams;
     fn payoff(&self)->&dyn Payoff;
     fn exercise_type(&self)->&dyn ExerciseRule;

@@ -1,4 +1,4 @@
-use crate::traits::engine::{PDEMethod,BoundaryCondition};
+use crate::traits::engine::PDEMethod;
 use crate::errors::*;
 use crate::params::common::CommonParams;
 use crate::traits::{payoff::Payoff,exercise::ExerciseRule};
@@ -12,6 +12,7 @@ impl ImplicitMethod {
         Self
     }
 }
+
 
 impl PDEMethod for ImplicitMethod {
     fn step_back(
@@ -40,9 +41,10 @@ impl PDEMethod for ImplicitMethod {
         let mut c=vec![0.0; n-1];
         let mut rhs=vec![0.0; n];
 
-        // 边界条件直接从grid_next复制
-        grid[time_idx][0]=grid[time_idx+1][0];
-        grid[time_idx][n-1]=grid[time_idx+1][n-1];
+        b[0]=1.0;
+        if n>1{c[0]=0.0;}
+        rhs[0]=grid[time_idx][0];
+
 
         //填充矩阵系数
         for i in 1..n-1{
@@ -50,56 +52,49 @@ impl PDEMethod for ImplicitMethod {
             let s=to_price(s_space);
             // 二阶空间导数的系数α：对应(1/2)σ²S²/ΔS² * Δt（原始空间）或0.5σ²/Δx² * Δt（对数空间）
             let alpha=if use_log_space{
-                let log_diffusion=0.5*sigma.powi(2);
-                log_diffusion*dt/(dx*dx)
+                0.5*sigma.powi(2)*dt/dx.powi(2)
             }else{
-                0.5*sigma.powi(2)*s.powi(2)*dt/(dx*dx)
+                0.5*sigma.powi(2)*s.powi(2)*dt/dx.powi(2)
             };
 
             let beta = if use_log_space{
-                let log_drift=r-q+0.5*sigma.powi(2);
-                log_drift*dt/(2.0*dx)
+                (r-q-0.5*sigma.powi(2))*dt/(2.0*dx)
             }else{
                 (r-q)*s*dt/(2.0*dx)
             };
 
-            a[i]=-alpha+beta;
+            a[i-1]=-alpha+beta;
             b[i]=1.0+2.0*alpha+r*dt;
             c[i]=-alpha-beta;
 
             rhs[i]=grid[time_idx+1][i];
         }
 
-        let alpha0=if use_log_space{
-            0.5*sigma.powi(2)*dt/(dx*dx)
-        }else{
-            0.5*sigma.powi(2)*(0.1*s0).powi(2)*dt/(dx*dx)
-        };
-
-        let alpha_n=if use_log_space{
-            0.5*sigma.powi(2)*(dx*dx)
-        }else{
-            0.5*sigma.powi(2)*(2.0*s0).powi(2)*dt/(dx*dx)
-        };
-
-        rhs[0]=grid[time_idx+1][0];
-        rhs[n-1]=grid[time_idx+1][n-1];
-        b[0]=1.0+alpha0+r*dt;
-        b[n-1]=1.0+alpha_n+r*dt;
+        b[n-1]=1.0;
+        if n>2{
+            a[n-2]=0.0;
+        }
+        rhs[n-1]=grid[time_idx][n-1];
 
         rhs=ThomasSolver(&a,&b,&c,&rhs)?;
 
-        for i in 1..n-1{
+        for i in 0..n{
             let s_space=s_min+i as f64*dx;
             let s=to_price(s_space);
             let intrinsic_value=payoff.payoff(s);
 
-            grid[time_idx][i]=if exercise_rule.should_exercise(remaining_time,s,intrinsic_value,rhs[i]){
-                intrinsic_value
+            if i>0 && i<n-1{
+                grid[time_idx][i]=if exercise_rule.should_exercise(remaining_time,s,intrinsic_value,rhs[i]){
+                    intrinsic_value
+                }else{
+                    rhs[i]
+                };
             }else{
-                rhs[i]
-            };
+                grid[time_idx][i]=rhs[i];
+            }
+
         }
         Ok(())
     }
 }
+
